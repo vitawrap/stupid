@@ -2,6 +2,7 @@
 best idea
 
 # rules
+- don't edit this file
 - ask me (plaaosert) for edit access
 - don't be stupid in the changes
 - no illegal things
