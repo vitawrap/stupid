@@ -1,5 +1,5 @@
 # stupid
-best idea
+bestest idea
 
 # rules
 - don't edit this file
