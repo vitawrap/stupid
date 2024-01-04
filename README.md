@@ -1,5 +1,5 @@
 # stupid
-bestest idea
+best idea
 
 # rules
 - don't edit this file
@@ -8,3 +8,7 @@ bestest idea
 - no illegal things
 - no copyright infringing things
 - be normal
+
+# recommendations
+- make big changes in a branch so i don't have to parachute in to fix merge conflicts!!!!!
+- pull requests are recommended, even if you could just merge them yourself!
