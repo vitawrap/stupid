@@ -1,5 +1,5 @@
 # stupid
-best idea
+bestest idea
 
 # rules
 - ask me (plaaosert) for edit access
