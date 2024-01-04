@@ -11,4 +11,4 @@ best idea
 
 # recommendations
 - make big changes in a branch so i don't have to parachute in to fix merge conflicts!!!!!
-- pull requests are recommended, even if you could just merge them yourself!
+- pull requests are recommended, even if you could just merge them yourself, to prevent merge conflicts as above
