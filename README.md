@@ -1,5 +1,8 @@
-# stupid
-best idea
+# The Labyrinth
+This page is not in-universe and shouldn't be linked to anywhere except at the Gate (https://labyrinth.plaao.net/).
+- All files should be accessible somehow, whether that is linked to or embedded. No file should be orphaned.
+
+![image](https://github.com/plaaosert/stupid/assets/13522266/ddab69bc-92c7-46e7-b288-3af2de005cf3)
 
 # rules
 - don't edit this file
