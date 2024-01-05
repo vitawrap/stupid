@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Tunnels of Glembo</title>
+	<style>
+	 body {
+		background-color:#060400;
+		color:#d5d0c5;
+	 }
+	#container {
+		width:23vw;
+		min-width:400px;
+		max-width:1000px;
+		margin:auto;
+	}
+	hr {
+		max-width:20vw;
+	}
+	h1 {
+		text-align:center;
+	}
+	#ToGvisual {
+		width:256px;
+		height:256px;
+	}
+	#Togtryagain, a {
+		font-size:1.5rem;
+	}
+	#ToGtryagain:hover, a:hover {
+		opacity:0.8;
+	}
+	</style>
+</head>
+
+<body>
+<!-- Unused IDs for future improvements -->
+	<div id="container">
+		<h1>Tunnels of Glembo</h1><hr>
+		<center><img id="ToGvisual" src="corridor.gif" alt="Tunnels of Glembo - Visualisation"/></center>
+		<i id="ToGevent"></i><hr>
+		<b id="ToGtryagain">Try again.</b>
+		<a id="ToGexit" href="">Exit the Tunnels of Glembo.</a>
+	</div>
+	
+	<script src="explore.js" onload="TunnelsOfGlembo()"></script>
+</body>
+</html>
