@@ -47,8 +47,8 @@ function rando (maxNum) {
 	nrrNum = newNum;
 	return newNum;
 }
-/*check length with name.length*/
 
+/* Runs the tunnels of glembo. */
 function TunnelsOfGlembo() {
 	var status = Math.floor(Math.random() * 100);
 	if (status >= 90) {
@@ -60,7 +60,7 @@ function TunnelsOfGlembo() {
 		trybutton.style.display="none";
 	} else {
 		/* Fail state */
-		textBox.innerHTML = fails[rando(fails.length - 1)];
+		textBox.innerHTML = fails[rando(fails.length)];
 		exitLink.style.display="none";
 		
 		var chance = rando(100);
