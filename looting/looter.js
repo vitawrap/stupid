@@ -14,6 +14,19 @@ const NUM_EACH = [
 
 const TYPS = ["weapon", "armour", "ring", "skill"];
 
+let files = [
+
+]
+
+for (let i=0; i<4; i++) {
+    files.push([])
+    for (let j=0; j<NUM_EACH[i]; j++) {
+        let img = new Image();
+        img.src = resolve_item_source(TYPS[i], j)
+        files[i].push(img);
+    }
+}
+
 let sidebar_open = false;
 let mouse_on_right = false;
 
