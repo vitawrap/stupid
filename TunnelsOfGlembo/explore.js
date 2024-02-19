@@ -8,7 +8,7 @@ const fails = [ "The Tunnels of Glembo are unforgiving to you.",
 		"Glembo must have been a cruel person to create these Tunnels of his.",
 		"Exploring the Tunnels of Glembo fills you with determination.",
 		"You trip over a rock comically! The Tunnels of Glembo will do anything to stop you from reaching the other side!",
-		"In a haze, you imagine Glembo infront of you. But alas, it was but another trick of the Tunnels of Glembo",
+		"In a haze, you imagine Glembo in front of you. But alas, it was but another trick of the Tunnels of Glembo.",
 		"Could this be the Labyrinth? Or perhaps the Tunnels of Glembo are simply one part of a greater Labyrinth?"
 ];
 /* Lines for when a player exits the Tunnels of Glembo */
@@ -32,7 +32,16 @@ const tunnels = [
 	"corridorMouse"
 ];
 
+const tunnel_links = [
+	[{x: 37, y: 66, w: 40, h: 94, link: "fires.html"}],
+	[{x: 67, y: 178, w: 53, h: 26, link: "rodent.html"}]
+]
+
+const end_link = {x: 81, y: 36, w: 90, h: 132}
+
 var visualBox = document.getElementById("ToGvisual");
+var visualDiv = document.getElementById("ToGdiv");
+
 var textBox = document.getElementById("ToGevent");
 var exitLink = document.getElementById("ToGexit");
 var trybutton = document.getElementById("ToGtryagain");
@@ -52,6 +61,12 @@ function rando (maxNum) {
 /* Runs the tunnels of glembo. */
 function TunnelsOfGlembo() {
 	var status = Math.floor(Math.random() * 100);
+	let visual_div_bbox = visualDiv.getBoundingClientRect();
+
+	while (visualDiv.querySelector("a")) {
+		visualDiv.removeChild(visualDiv.querySelector("a"));
+	}
+
 	if (status >= 90) {
 		/* Winner */
 		textBox.innerHTML = succeed[rando(succeed.length)];
@@ -59,6 +74,20 @@ function TunnelsOfGlembo() {
 		exitLink.href = locations[Math.floor(Math.random() * locations.length)];
 		exitLink.style.display="block";
 		trybutton.style.display="none";
+
+		let link = end_link;
+		let a_elem = document.createElement("a");
+		a_elem.style.position = "absolute";
+		a_elem.style.left = `calc(50% - 128px + ${link.x}px)`;
+		a_elem.style.top = visual_div_bbox.top + link.y + "px";
+		a_elem.style.width = link.w + "px";
+		a_elem.style.height = link.h + "px";
+
+		// a_elem.style.border = "1px solid red";
+
+		a_elem.href = exitLink.href;
+
+		visualDiv.appendChild(a_elem);
 	} else {
 		/* Fail state */
 		textBox.innerHTML = fails[rando(fails.length)];
@@ -68,7 +97,24 @@ function TunnelsOfGlembo() {
 		if (chance <= 67) {
 			visualBox.src="corridor.gif";
 		} else {
-			visualBox.src=tunnels[rando(tunnels.length)] + ".gif";
+			let choice = rando(tunnels.length);
+
+			visualBox.src = tunnels[choice] + ".gif";
+
+			tunnel_links[choice].forEach(link => {
+				let a_elem = document.createElement("a");
+				a_elem.style.position = "absolute";
+				a_elem.style.left = `calc(50% - 128px + ${link.x}px)`;
+				a_elem.style.top = visual_div_bbox.top + link.y + "px";
+				a_elem.style.width = link.w + "px";
+				a_elem.style.height = link.h + "px";
+
+				// a_elem.style.border = "1px solid red";
+
+				a_elem.href = link.link;
+
+				visualDiv.appendChild(a_elem);
+			})
 		}
 	}
 	
