@@ -1,0 +1,47 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="looter.css">
+    </head>
+    <body>
+        <!--
+            CREDIT
+                - all sprites:
+                    - Whitecat https://web.archive.org/web/20170726190716/http://whitecafe.sakura.ne.jp/info.html
+                    - Bakeneko https://neko.moo.jp/BS/
+                - sounds:
+                    - clickPlant, clickPlant2 | Blockland
+                    - explosion.mp3           | Roblox
+                    - get_item.mp3            | https://motionarray.com/sound-effects/game-level-up-pack-1370639
+        -->
+        <script src="looter.js"></script>
+        <div id="sidebar" class="sidebar invisible">
+            <div class="equipped-items">
+                <div class="itemstats">
+
+                </div>
+                <div class="itemicons">
+                    <div class="item-box" id="weapon-item-box">
+                        <a href="../index.html"><img src="" class="item rarity0" id="weapon-item-box-item"></a>
+                    </div>
+                    <div class="item-box" id="armour-item-box">
+                        <a href="../index.html"><img src="" class="item rarity0" id="armour-item-box-item"></a>
+                    </div>
+                    <div class="item-box" id="ring-item-box">
+                        <a href="../index.html"><img src="" class="item rarity0" id="ring-item-box-item"></a>
+                    </div>
+                    <div class="item-box" id="skill-item-box">
+                        <a href="../index.html"><img src="" class="item rarity0" id="skill-item-box-item"></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="center-background-box">
+        </div>
+
+        <div class="center-loot-box item-box">
+            <img src="chests\t5.png" class="item rarity0 hidden" id="center-loot-box-item">
+            <img src="skill/000.png" class="item-result rarity0 hidden" id="center-loot-box-item-result">
+        </div>
+    </body>
+</html>

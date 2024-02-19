@@ -1,0 +1,180 @@
+body {
+    background-color: black;
+    overflow: hidden;
+}
+
+body * {
+    user-select: none;
+}
+
+img {
+    image-rendering: optimizeSpeed;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: optimize-contrast;
+    image-rendering: pixelated;
+    -ms-interpolation-mode: nearest-neighbor;
+    position: absolute;
+}
+
+.item-box {
+
+}
+
+.center-loot-box img {
+    min-width: calc(100%);
+    width: auto;
+    height: auto;
+
+    padding: 8px;
+}
+
+.sidebar {
+    display: flex;
+
+    position: fixed;
+
+    height: 100%;
+
+    align-items: center;
+
+    transition: 0.3s ease-in-out;
+}
+
+.sidebar.visible {
+    right: -1px;
+}
+
+.sidebar.invisible {
+    right: -512px;
+}
+
+.equipped-items {
+    border: 1px solid grey;
+
+    display: flex;
+}
+
+.itemstats {
+    background-color: #222;
+    order: 1;
+
+    width: 0px;
+}
+
+.itemicons {
+    background-color: #222;
+    order: 2;
+}
+
+.center-background-box {
+    position: fixed;
+
+    --siz: 144px;
+
+    top: calc(50% - (var(--siz) / 2));
+    left: calc(50% - (var(--siz) / 2));
+
+    width: var(--siz);
+    height: var(--siz);
+
+    background-color: #222;
+    border: 1px solid grey;
+}
+
+.center-loot-box {
+    position: fixed;
+
+    --siz: 72px;
+
+    top: calc(50% - 8px - (var(--siz) / 2));
+    left: calc(50% - 8px - (var(--siz) / 2));
+
+    width: var(--siz);
+    height: var(--siz);
+}
+
+.center-loot-box .item-result {
+    transition:
+        margin-left 0.5s,
+        margin-top 0.5s,
+        opacity 0.5s,
+        padding 0.5s;
+
+    padding: 8px;
+    opacity: 1;
+    margin-left: 0;
+    margin-top: 0;
+
+    width: 72px;
+    height: 72px;
+
+    pointer-events: none;
+}
+
+.center-loot-box .item-result.hidden {
+    padding: 64px;
+    opacity: 0;
+    margin-left: -56px;
+    margin-top: -56px;
+}
+
+.center-loot-box .item {
+    transition:
+        margin-top 1s,
+        opacity 1s;
+
+    margin-top: 0%;
+    opacity: 1;
+}
+
+.center-loot-box .item.hidden {
+    opacity: 0;
+    margin-top: 25%;
+}
+
+.itemicons .item-box {
+    --siz: 90px;
+
+    width: var(--siz);
+    height: var(--siz);
+
+    margin: 32px;
+}
+
+.itemicons img {
+    width: 72px;
+    height: 72px;
+
+    padding: 8px;
+}
+
+.rarity0 {
+    background-color: #222;
+    border: 1px solid gray;
+}
+
+.rarity1 {
+    background-color: darkgreen;
+    border: 1px solid limegreen;
+}
+
+.rarity2 {
+    background-color: darkblue;
+    border: 1px solid darkcyan;
+}
+
+.rarity3 {
+    background-color: darkmagenta;
+    border: 1px solid orchid;
+}
+
+.rarity4 {
+    background-color: maroon;
+    border: 1px solid red;
+}
+
+.rarity5 {
+    background-color: darkgoldenrod;
+    border: 1px solid gold;
+}
