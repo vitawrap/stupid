@@ -17,10 +17,6 @@ img {
     position: absolute;
 }
 
-.item-box {
-
-}
-
 .center-loot-box img {
     min-width: calc(100%);
     width: auto;
