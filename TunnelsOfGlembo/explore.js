@@ -22,7 +22,8 @@ const succeed = [ "There's something at the end of this tunnel. Could this be th
 /* Links to exits to the Tunnels of Glembo */
 /* Expand to this if you want to make your page reachable through the Tunnels of Glembo */
 const locations = [ "../",
-	"../baba.html"
+	"../baba.html",
+	"Scrumblus/"
 ];
 /* Links to images for the Tunnels of Glembo */
 /* Don't include the .gif at the end. Case Sensitive, probably. */
