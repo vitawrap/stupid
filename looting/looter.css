@@ -173,4 +173,7 @@ img {
 .rarity5 {
     background-color: darkgoldenrod;
     border: 1px solid gold;
+
+    box-shadow: 0px 0px 5px 5px darkgoldenrod;
+    filter: saturate(1.5);
 }

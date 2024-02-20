@@ -36,6 +36,7 @@ let expl_audio = new Audio('explosion.mp3');
 let get_item_audio = new Audio('get_item.mp3');
 let equip_audio = new Audio('clickPlant2.mp3');
 let equip_audio2 = new Audio('handleSmallLeather.ogg');
+let the_big_one = new Audio('the_big_one.mp3');
 
 function show_sidebar() {
     document.getElementById("sidebar").classList.remove("invisible");
@@ -51,14 +52,38 @@ function hide_sidebar() {
     sidebar_open = false;
 }
 
-function show_center_chest_icon(dont_rerandomise) {
-    if (!dont_rerandomise) {
-        next_chest_level = Math.floor(Math.min(4, Math.min(
-            2 + (Math.random() * 5),
-            Math.random() * 5
-        )));
-    }
+function next_chest_roll() {
+    return Math.floor(Math.min(4, Math.min(
+        0 + (Math.random() * 5),
+        Math.random() * 5
+    )));
+}
 
+function get_next_chest() {
+    next_chest_level = next_chest_roll();
+}
+
+function benchmark_chest_type_chances() {
+    let results = new Array(1e6).fill(0).map(next_chest_roll);
+
+    console.log(new Array(5).fill(0).map((_, i) => `Tier ${i} | ${
+        ((Math.floor(10000 * results.filter(v => v==i).length / results.length) / 100) + "%").padEnd(8)
+    } [${
+        "#".repeat(100 * results.filter(v => v==i).length / results.length).padEnd(100)
+    }]`).join("\n"))
+}
+
+function benchmark_total_rarity_chances() {
+    let results = new Array(6e5).fill(0).map(_ => draw_from_chest(next_chest_roll()).tier);
+
+    console.log(new Array(6).fill(0).map((_, i) => `Tier ${i} | ${
+        ((Math.floor(10000 * results.filter(v => v==i).length / results.length) / 100) + "%").padEnd(8)
+    } [${
+        "#".repeat(100 * results.filter(v => v==i).length / results.length).padEnd(100)
+    }]`).join("\n"))
+}
+
+function show_center_chest_icon() {
     item_center_icon.style.visibility = "unset";
     item_center_icon.src = `chests/t${next_chest_level+1}.png`;
 
@@ -85,6 +110,8 @@ function set_center_image_icon(source, id, tier) {
 function start_roulette(chest_level) {
     chest_openable = false;
     let n = 24;
+    setTimeout(show_sidebar, 0);
+
     let fn = function() {
         let result = draw_from_chest(chest_level);
         set_center_image_icon(TYPS[result.typ], result.id, result.tier);
@@ -96,6 +123,9 @@ function start_roulette(chest_level) {
         } else {
             item_center_icon.style.visibility = "hidden";
             item_center_icon.classList.add("hidden");
+
+            get_next_chest();
+            save_equipment();
 
             show_overlay_popin(draw_from_chest(chest_level))
         }
@@ -114,7 +144,13 @@ function show_overlay_popin(item) {
     result.className = "item-result";
     result.classList.add(`rarity${item.tier}`)
 
-    get_item_audio.play();
+    let timeout = 500;
+    if (item.tier < 5) {
+        get_item_audio.play();
+    } else {
+        the_big_one.play();
+        timeout = 3500;
+    }
 
     setTimeout(function() {
         if (item.tier >= equipped[item.typ].tier) {
@@ -122,7 +158,7 @@ function show_overlay_popin(item) {
         } else {
             trash_popin();
         }
-    }, 500);
+    }, timeout);
 }
 
 function trash_popin() {
@@ -183,6 +219,12 @@ function trash_popin() {
             document.body.appendChild(a_elem);
             a_elem.appendChild(expl);
 
+            setTimeout(function() {
+                if (!mouse_on_right) {
+                    hide_sidebar();
+                }
+            }, 500);
+
             setTimeout(show_center_chest_icon, 500);
         } else {
             result_obj.style.left = cur_pos[0] + "px";
@@ -236,14 +278,6 @@ function fly_popin_to_position(item) {
         cur_speed[0] *= 1 + (mul * dt);
         cur_speed[1] *= 1 + (mul * dt);
 
-        let sq_distance = (Math.pow(cur_pos[0]-(end_coords_x-start_coords_x), 2) + Math.pow(cur_pos[1]-(end_coords_y-start_coords_y), 2))
-        console.log(sq_distance)
-
-        if (!sidebar_up) {
-            show_sidebar();
-            sidebar_up = true;
-        }
-
         if (cur_pos[0] >= (end_coords_x-start_coords_x)) {
             // make the popin vanish, set the item, refresh the sidebar and set a timeout to hide it again
             result_obj.style.visibility = "hidden";
@@ -274,28 +308,49 @@ function fly_popin_to_position(item) {
     window.requestAnimationFrame(animation_fn);
 }
 
+function benchmark_chest_chances() {
+    for (let chest_level=0; chest_level<5; chest_level++) {
+        let results = new Array(1e6).fill(0).map(_ => draw_from_chest(chest_level).tier);
+        
+        console.log(`Chest tier ${chest_level} - average tier: ${results.reduce((p, c, i) => p+c) / results.length}\n\n${
+            new Array(6).fill(0).map((_, i) => `Tier ${i} | ${((Math.round(10000 * (results.filter(v => v==i).length / results.length)) / 100).toString()+"%").padEnd(8)} [${
+                "#".repeat(Math.floor(100 * results.filter(v => v==i).length / results.length)).padEnd(100)
+            }]`).join("\n")
+        }`);
+    }
+}
+
 function draw_from_chest(chest_tier) {
     let chosen_typ = Math.floor(Math.random() * 4);
 
-    // each chest tier gives +50 points
-    // loot roll gives 0-200 points, rolled twice to take the lower of the two
-    // therefore, max is 400 (200 + 200)
-    // 0 - 0-75
-    // 1 - 76-150
-    // 2 - 151-225
-    // 3 - 226-300
-    // 4 - 301-375
-    // 5 - 376+
-    let tier_points = (chest_tier * 50) + Math.min(Math.random() * 200, Math.random() * 200);
-    let tier = -1;
-    while (tier_points > 0) {
-        tier++;
-        tier_points -= 75;
+    // each chest tier gives +(3^tier) rolls [0-1) for rarity (with advantage)
+    let next_threshold = 0;
+    let threshold_increase = 2/3;
+    let threshold_inc_mul = 1/3;
+    let max_rolls_per_tier = 3;
+
+    while (true) {
+        let tier = -1;
+        let roll = 0;
+        for (let i=0; i<(1+Math.floor(Math.random()*(Math.pow(chest_tier+1, max_rolls_per_tier)))); i++) {
+            roll = Math.max(Math.random(), roll);
+        }
+
+        while (roll > next_threshold && tier < 5) {
+            tier++;
+            next_threshold += threshold_increase;
+            threshold_increase *= threshold_inc_mul;
+        }
+
+        let item_index = 1 + Math.floor(Math.random() * NUM_EACH[chosen_typ]);
+
+        // items have a 50% chance to get shifted down a rarity level
+        if (Math.random() < 0.5) {
+            tier = Math.max(0, tier-1);
+        }
+
+        return {id: item_index, tier: tier, typ: chosen_typ};
     }
-
-    let item_index = 1 + Math.floor(Math.random() * NUM_EACH[chosen_typ]);
-
-    return {id: item_index, tier: tier, typ: chosen_typ};
 }
 
 function refresh_equipped_items() {
@@ -326,8 +381,9 @@ document.addEventListener("DOMContentLoaded", function() {
     if (t && JSON.parse(t).equipped) {
         equipped = JSON.parse(t).equipped;
         next_chest_level = JSON.parse(t).next_chest_level;
-        show_center_chest_icon(true);
+        show_center_chest_icon();
     } else {
+        get_next_chest();
         show_center_chest_icon();
     }
 
