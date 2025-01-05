@@ -9,21 +9,24 @@ const fails = [ "The Tunnels of Glembo are unforgiving to you.",
 		"Exploring the Tunnels of Glembo fills you with determination.",
 		"You trip over a rock comically! The Tunnels of Glembo will do anything to stop you from reaching the other side!",
 		"In a haze, you imagine Glembo in front of you. But alas, it was but another trick of the Tunnels of Glembo.",
-		"Could this be the Labyrinth? Or perhaps the Tunnels of Glembo are simply one part of a greater Labyrinth?"
+		"Could this be the Labyrinth? Or perhaps the Tunnels of Glembo are simply one part of a greater Labyrinth?",
+		"Glembo will come for us all one day. These Tunnels of His are surely a sign."
 ];
 /* Lines for when a player exits the Tunnels of Glembo */
 const succeed = [ "There's something at the end of this tunnel. Could this be the exit to the Tunnels of Glembo?",
 	"A light is visible at the end of the corridor. You have escaped the Tunnels of Glembo.",
 	"A wall collapses infront of you! It's an exit from the Tunnels of Glembo!",
 	"It appears that the Tunnels of Glembo aren't as endless as they seem.",
-	"Tunnels of Glembo."
+	"Tunnels of Glembo.",
+	"As you stare at the long sought after exit, you can't help but feel that the Tunnels of Glembo may offer more than you thought."
 ];
 
 /* Links to exits to the Tunnels of Glembo */
 /* Expand to this if you want to make your page reachable through the Tunnels of Glembo */
 const locations = [ "../",
 	"../baba.html",
-	"Scrumblus/"
+	"Scrumblus/",
+	"../looting/looter.html"
 ];
 /* Links to images for the Tunnels of Glembo */
 /* Don't include the .gif at the end. Case Sensitive, probably. */
@@ -32,6 +35,7 @@ const tunnels = [
 	"corridorMouse"
 ];
 
+/* Popups for the Tunnels of Glembo, can be anything. */
 const tunnel_links = [
 	[{x: 37, y: 66, w: 40, h: 94, link: "fires.html"}],
 	[{x: 67, y: 178, w: 53, h: 26, link: "rodent.html"}]
@@ -73,7 +77,7 @@ function TunnelsOfGlembo() {
 		visualBox.src = "corridorExit.gif";
 		exitLink.href = locations[Math.floor(Math.random() * locations.length)];
 		exitLink.style.display="block";
-		trybutton.style.display="none";
+		trybutton.innerHTML="Continue searching.";
 
 		let link = end_link;
 		let a_elem = document.createElement("a");
@@ -91,6 +95,7 @@ function TunnelsOfGlembo() {
 	} else {
 		/* Fail state */
 		textBox.innerHTML = fails[rando(fails.length)];
+		trybutton.innerHTML="Try again.";
 		exitLink.style.display="none";
 		
 		var chance = rando(100);
