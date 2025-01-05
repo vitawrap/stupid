@@ -26,7 +26,8 @@ const succeed = [ "There's something at the end of this tunnel. Could this be th
 const locations = [ "../",
 	"../baba.html",
 	"Scrumblus/",
-	"../looting/looter.html"
+	"../looting/looter.html",
+	"Garbage/cookie.html"
 ];
 /* Links to images for the Tunnels of Glembo */
 /* Don't include the .gif at the end. Case Sensitive, probably. */
