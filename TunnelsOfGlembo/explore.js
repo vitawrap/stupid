@@ -32,13 +32,15 @@ const locations = [ "../",
 /* Don't include the .gif at the end. Case Sensitive, probably. */
 const tunnels = [
 	"corridorTorch",
-	"corridorMouse"
+	"corridorMouse",
+	"corridorGhost"
 ];
 
 /* Popups for the Tunnels of Glembo, can be anything. */
 const tunnel_links = [
 	[{x: 37, y: 66, w: 40, h: 94, link: "fires.html"}],
-	[{x: 67, y: 178, w: 53, h: 26, link: "rodent.html"}]
+	[{x: 67, y: 178, w: 53, h: 26, link: "rodent.html"}],
+	[{x: 97, y: 64, w: 64, h: 128, link: "ghost.html"}]
 ]
 
 const end_link = {x: 81, y: 36, w: 90, h: 132}
