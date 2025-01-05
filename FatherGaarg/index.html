@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+    <head>
+<style>
+* {
+    text-align: center;
+}
+#father {
+    float: right;
+    width: 50vw;
+}
+audio {
+    display: none;
+}
+#response {
+    display: none;
+}
+@keyframes disappear {
+    0% {
+        opacity: 100%;
+    }
+    75% {
+        opacity: 100%;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+.animated {
+    animation: 5s linear 1s 1 normal disappear;
+}
+</style>
+    </head>
+    <body>
+        <audio controls id="gaarg1">
+            <source src="gaarg1.mp3">
+        </audio>
+        <audio controls id="gaarg2">
+            <source src="gaarg2.mp3">
+        </audio>
+        <audio controls id="gaarg3">
+            <source src="gaarg3.mp3">
+        </audio>
+        <script src="confess.js"></script>
+        <img src="father.png" id="father"> <br>
+        <form onsubmit="confess(); document.getElementById('confession').value = ''; return false;">
+            <input type="text" id="confession" placeholder="confession goes here">
+            <input type="submit" value="confess">
+        </form>
+        <br>
+        <div id="response">
+            <h1>Father Gaarg says...</h1>
+            <p id="message">
+                You are forgiven, child.
+            </p>
+        </div>
+    </body>
+</html>
