@@ -27,7 +27,9 @@ const locations = [ "../",
 	"../baba.html",
 	"Scrumblus/",
 	"../looting/looter.html",
-	"Garbage/cookie.html"
+	"Garbage/cookie.html",
+	"Garbage/procrastination.html",
+	"Garbage/theTruth.html"
 ];
 /* Links to images for the Tunnels of Glembo */
 /* Don't include the .gif at the end. Case Sensitive, probably. */
