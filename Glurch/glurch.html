@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>glurch engine</title>
+<style>
+body {
+    width: 613px;
+}
+header {
+    white-space: pre;
+    font-family: monospace;
+}
+
+.glurch {
+    text-align: left;
+    width: 580px;
+    margin:  8px;
+    padding: 8px;
+    background: "#f5f5f5";
+}
+.glurch h4 {
+    margin: 0;
+}
+.glurch img {
+    width:  1rem;
+    height: 1rem;
+}
+</style>
+    </head>
+    <body>
+        <form action="glurch.html?q=glurch">
+            <input id="query" type="text" placeholder="glurch query" style="width: 550px;">
+            <input type="submit" value="go" style="width: 50px;">
+        </form>
+        <center id="glurches"></center>
+        <center>
+            <button onclick="addglurch();">load more results</button>
+        </center>
+        <script>
+
+var text = '<div class="glurch"><img src="glurch.ico"><a href="https://glurch.glurch">https://glurch.glurch</a><h4>glurch</h4><p>Glorem glipsum glolor glit glamet, glonsectetur gladipiscing glelit, gled glo gleiusmod glempor glincididunt glut glabore glet glolore glagna glaliqua. Glut glenim glad glinim gleniam, gluis glostrud glexercitation glullamco glaboris glisi glut glaliquip glex glea glommodo glonsequat.</p></div>';
+
+function addglurch() {
+    let glurches = document.getElementById("glurches");
+    glurches.innerHTML = glurches.innerHTML + text;
+    glurches.innerHTML = glurches.innerHTML + text;
+    glurches.innerHTML = glurches.innerHTML + text;
+    glurches.innerHTML = glurches.innerHTML + text;
+    glurches.innerHTML = glurches.innerHTML + text;
+    glurches.innerHTML = glurches.innerHTML + text;
+    glurches.innerHTML = glurches.innerHTML + text;
+    glurches.innerHTML = glurches.innerHTML + text;
+    glurches.innerHTML = glurches.innerHTML + text;
+    glurches.innerHTML = glurches.innerHTML + text;
+}
+
+addglurch();
+
+        </script>
+    </body>
+</html>
+
