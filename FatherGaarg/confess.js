@@ -21,15 +21,19 @@ function noise() {
     gaargs[number].play()
 }
 
+function showmessage(message) {
+    document.getElementById("message").innerHTML = message;
+    response = document.getElementById("response");
+    response.style.display = "inline";
+}
+
 function confess() {
     let confession = document.getElementById("confession");
     console.log(confession.value);
     if (confession.value != "") {
         let number = Math.floor(Math.random() * 7);
         let message = messages[number];
-        document.getElementById("message").innerHTML = message;
-        response = document.getElementById("response");
-        response.style.display = "inline";
+        showmessage(message);
         response.classList.add("animated");
         response.addEventListener("animationend", function() {
             response.classList.remove("animated");
@@ -37,5 +41,15 @@ function confess() {
         });
         noise();
         confession.value = "";
+    }
+}
+
+function eat() {
+    if (document.cookie != "BlessingsFromGaarg") {
+        document.getElementById("form").style['display'] = "none";
+        document.getElementById("html").style['background-image'] = "url('./wrathofgod.gif')";
+        document.getElementById("html").style['color'] = "white";
+        showmessage("I HATE COOKIES!!!");
+        document.cookie = "BlessingsFromGaarg";
     }
 }

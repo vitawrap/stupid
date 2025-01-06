@@ -1,14 +1,17 @@
 <!doctype html>
-<html>
+<html id="html">
     <head>
 <style>
 * {
     text-align: center;
 }
-body {
-    margin-right: 0;
+html {
+    background-size: cover;
 }
-#father {
+body {
+    margin: 0;
+}
+.father {
     float: right;
     width: 50vw;
 }
@@ -44,9 +47,8 @@ audio {
         <audio controls id="gaarg3">
             <source src="gaarg3.mp3">
         </audio>
-        <script src="confess.js"></script>
-        <img src="father.png" id="father"> <br>
-        <form onsubmit="confess(); document.getElementById('confession').value = ''; return false;">
+        <img src="father.png" class="father"> <br>
+        <form id="form" onsubmit="confess(); document.getElementById('confession').value = ''; return false;">
             <input type="text" id="confession" placeholder="confession goes here">
             <input type="submit" value="confess">
         </form>
@@ -57,5 +59,6 @@ audio {
                 You are forgiven, child.
             </p>
         </div>
+        <script src="confess.js" onload="eat()"></script>
     </body>
 </html>
