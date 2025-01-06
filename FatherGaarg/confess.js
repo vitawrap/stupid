@@ -45,11 +45,12 @@ function confess() {
 }
 
 function eat() {
-    if (document.cookie != "BlessingsFromGaarg") {
+    if (document.cookie) {
         document.getElementById("form").style['display'] = "none";
         document.getElementById("html").style['background-image'] = "url('./wrathofgod.gif')";
         document.getElementById("html").style['color'] = "white";
         showmessage("I HATE COOKIES!!!");
-        document.cookie = "BlessingsFromGaarg";
+        document.cookie = '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        document.cookie.split(";").forEach(function(c) { document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); });
     }
 }
