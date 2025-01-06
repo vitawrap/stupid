@@ -45,11 +45,11 @@ function confess() {
 }
 
 function eat() {
-    if (document.cookie != "BlessingsFromGaarg") {
+    if (!document.cookie.includes("BlessingsFromGaarg=true")) {
         document.getElementById("form").style['display'] = "none";
         document.getElementById("html").style['background-image'] = "url('./wrathofgod.gif')";
         document.getElementById("html").style['color'] = "white";
         showmessage("I HATE COOKIES!!!");
-        document.cookie = "BlessingsFromGaarg";
+        document.cookie = "BlessingsFromGaarg=true";
     }
 }
