@@ -186,10 +186,10 @@
                 // make the coin and have it fall down after a random amount of time
                 let elem2 = document.createElement("img");
                 elem2.className = "particle";
-                elem2.style.left = `${bbox.x + (24)}px`;
-                elem2.style.top = `${bbox.y - (340)}px`;
+                elem2.style.left = `${bbox.x + (0)}px`;
+                elem2.style.top = `${bbox.y - (360)}px`;
                 elem2.src = `coin2.png?t=${Date.now()}`;
-                elem2.filter = "drop-shadow(0px 10px 9px yellow);";
+                elem2.style.display = "none";
 
                 setTimeout(() => {
                     elem2.style.display = "none";
@@ -198,6 +198,7 @@
                 document.body.appendChild(elem2);
 
                 setTimeout(() => {
+                    /*
                     let e = document.createElement("img");
                     e.className = "particle";
                     e.style.left = `${bbox.x + (24)}px`;
@@ -209,15 +210,18 @@
                     setTimeout(() => {
                         e.remove();
                     }, 50)
+                    */
 
-                    elem2.style.top = `${window.innerHeight - 32}px`;
+                    elem2.style.top = `${window.innerHeight - 432}px`;
                     elem2.style.display = "";
-                    elem2.src = `coin4.png?t=${Date.now()}`;
+                    elem2.src = `coinFall.gif?t=${Date.now()}`;
                     elem2.filter = "";
 
-                    coins++;
-                    save_coins();
-                    update_coins_view();
+                    setTimeout(() => {
+                        coins++;
+                        save_coins();
+                        update_coins_view();
+                    }, 50)
                 }, Math.random() * 3000 + 2000)
             }
 
