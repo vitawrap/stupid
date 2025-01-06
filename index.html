@@ -53,8 +53,20 @@
 				<li><a href="baba.html">BABA.html</a></li>
 				<li><a href="TunnelsOfGlembo/">The Tunnels of Glembo.</a></li>
 				<li><a href="FatherGaarg/">Halls of Father Gaarg.</a></li>
+				<li><a href="riichi.html">Guide to Riichi Mahjong</a></li>
+				<li><a onclick="randomPage()">stuff</a></li>
 			</ul>
 		</div>
 	</div>
 </body>
+<script>
+	
+const urls = ["TunnelsOfGlembo/", "baba.html", "FatherGaarg/"] // please add new urls to this array
+
+function randomPage() {
+	newNumb = Math.floor(Math.random()*urls.length);
+	console.log(urls[newNumb]);
+	parent.location = urls[newNumb];
+}
+</script>
 </html>

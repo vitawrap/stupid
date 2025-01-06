@@ -1,0 +1,286 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>You found it...</title>
+        <style>
+            body {
+                background-color: black;
+                overflow: hidden;
+            }
+
+            body * {
+                user-select: none;
+            }
+
+            img {
+                image-rendering: optimizeSpeed;
+                image-rendering: -moz-crisp-edges;
+                image-rendering: -webkit-optimize-contrast;
+                image-rendering: optimize-contrast;
+                image-rendering: pixelated;
+                -ms-interpolation-mode: nearest-neighbor;
+                position: absolute;
+            }
+
+            .center-loot-box img {
+                min-width: calc(100%);
+                width: auto;
+                height: auto;
+
+                padding: 8px;
+            }
+
+            .center-loot-box {
+                position: fixed;
+
+                --siz: 72px;
+
+                top: calc(50% - 8px - (var(--siz) / 2));
+                left: calc(50% - 8px - (var(--siz) / 2));
+
+                width: var(--siz);
+                height: var(--siz);
+            }
+
+            .particle {
+                position: absolute;
+
+                pointer-events: none;
+
+                z-index: 999;
+            }
+
+            .outline {
+                filter: drop-shadow(1px 1px 0 white)
+                        drop-shadow(-1px 1px 0 white)
+                        drop-shadow(1px -1px 0 white)
+                        drop-shadow(-1px -1px 0 white);
+            }
+
+            @keyframes shaking1 {
+                0% {transform:translate(0px, 0px); }
+                25% {transform:translate(2px, 2px); }
+                50% {transform:translate(2px, -2px); }
+                75% {transform:translate(-2px, -2px) }
+                100% {transform:translate(-2px, 2px); }
+            }
+
+            @keyframes shaking2 {
+                0% {transform:translate(0px, 0px); }
+                25% {transform:translate(4px, -4px); }
+                50% {transform:translate(4px, 4px); }
+                75% {transform:translate(-4px, -4px) }
+                100% {transform:translate(-4px, 4px); }
+            }
+
+            @keyframes shaking3 {
+                0% {transform:translate(0px, 0px); }
+                25% {transform:translate(8px, 8px); }
+                50% {transform:translate(8px, -8px); }
+                75% {transform:translate(-8px, -8px) }
+                100% {transform:translate(-8px, 8px); }
+            }
+
+            .shaking1 {
+                animation-name: shaking1;
+                animation-duration: 0.01s;
+                animation-iteration-count: infinite;
+                animation-direction: alternate;
+            }
+
+            .shaking2 {
+                animation-name: shaking2;
+                animation-duration: 0.01s;
+                animation-iteration-count: infinite;
+                animation-direction: alternate;
+            }
+
+            .shaking3 {
+                animation-name: shaking3;
+                animation-duration: 0.01s;
+                animation-iteration-count: infinite;
+                animation-direction: alternate;
+            }
+        </style>
+    </head>
+    <body>
+        <!--
+            CREDIT
+                - all sprites:
+                    - Whitecat                               | https://web.archive.org/web/20170726190716/http://whitecafe.sakura.ne.jp/info.html
+                    - Bakeneko                               | https://neko.moo.jp/BS/
+                    - explosion_big.gif, explosion_small.gif | Captain Commando https://www.spriters-resource.com/arcade/capcommand/
+                - sounds:
+                    
+        -->
+        <div class="center-loot-box item-box" id="center-loot-box" draggable="false">
+            <img src="looting\chests\t5.png" class="item rarity0 hidden" id="center-loot-box-item" draggable="false">
+        </div>
+
+        <script>
+            // TODO GIVE PLAYER GOLD WHEN THEY BLOW UP A CHEST AND MAKE THEM ABLE TO SEE HOW MUCH GOLD THEY HAVE AND ALSO SAVE THE GOLD
+
+            chest_shaking_level = 0;
+            ready_for_next = true;
+
+            let flying_items = [];
+
+            function make_big_explosion() {
+                document.getElementById("center-loot-box").classList.remove(`shaking1`);
+                document.getElementById("center-loot-box").classList.remove(`shaking2`);
+                document.getElementById("center-loot-box").classList.remove(`shaking3`);
+                document.getElementById("center-loot-box").style.transform = "";
+
+                setTimeout(() => {
+                    let bbox = document.getElementById("center-loot-box").getBoundingClientRect();
+                    let expl = document.createElement("img");
+                    expl.className = "particle";
+                    expl.style.left = `${bbox.x - (102)}px`;
+                    expl.style.top = `${bbox.y - (132)}px`;
+                    expl.src = `explosion_big.gif?t=${Date.now()}`;
+
+                    setTimeout(() => {
+                        expl.remove();
+                    }, 2000)
+
+                    let num = Math.floor(Math.random() * 50) + 30;
+                    for (let i=0; i<num; i++) {
+                        setTimeout(() => {
+                            make_flying_item(bbox);
+                        }, Math.min(Math.floor(Math.random() * 100), Math.floor(Math.random() * 100)));
+                    }
+
+                    document.getElementById("center-loot-box").style.display = "none";
+                    document.body.appendChild(expl);
+                });
+            }
+
+            function make_flying_item(bbox) {
+                item_index = Math.floor(Math.random() * 151);
+
+                let item = document.createElement("img");
+                item.className = "particle";
+
+                let tx = bbox.x + (bbox.width / 2) - 0;
+                let ty = bbox.y + (bbox.height / 2) - 0;
+
+                item.style.left = `${tx}px`;
+                item.style.top = `${ty}px`;
+                item.src = `sprites/${item_index.toString().padStart(3, "0")}.png?t=${Date.now()}`;
+
+                document.body.appendChild(item);
+
+                let sizefactor = window.innerWidth / 1920;
+
+                item_data = {
+                    elem: item,
+                    rotation: Math.random() * 360,
+                    rotation_speed: Math.random() * 300 + 60,
+                    tx: tx,
+                    ty: ty,
+                    vx: ((Math.random() * 900) - 450) * sizefactor,
+                    vy: -(Math.random() * 300) - 500,
+                    gravity: (Math.random() * 1200) + 700,
+                    killtime: Date.now() + (Math.random() * 1000) + 750,
+                    killed: false,
+                }
+
+                flying_items.push(item_data);
+            }
+
+            function make_click_explosion(x, y) {
+                if (!(ready_for_next && chest_shaking_level > 3)) {
+                    let expl = document.createElement("img");
+                    expl.className = "particle";
+                    expl.style.left = `${x - (148/2)}px`;
+                    expl.style.top = `${y - (124/2)}px`;
+                    expl.src = `explosion_small.gif?t=${Date.now()}`;
+
+                    document.body.appendChild(expl);
+
+                    setTimeout(() => {
+                        expl.remove();
+                    }, 2000)
+                }
+
+                if (ready_for_next) {
+                    chest_shaking_level++;
+
+                    if (chest_shaking_level <= 3) {
+                        document.getElementById("center-loot-box").classList.remove(`shaking1`);
+                        document.getElementById("center-loot-box").classList.remove(`shaking2`);
+                        document.getElementById("center-loot-box").classList.remove(`shaking3`);
+
+                        document.getElementById("center-loot-box").classList.add(`shaking${chest_shaking_level}`);
+                        ready_for_next = false;
+                        setTimeout(() => {
+                            ready_for_next = true;
+                        }, 250);
+                    } else {
+                        // EXPLODE
+                        make_big_explosion();
+                    }
+                }
+            }
+
+            let last = Date.now();
+
+            document.addEventListener("DOMContentLoaded", e => {
+                document.getElementById("center-loot-box").addEventListener("mousedown", e => {
+                    make_click_explosion(e.clientX, e.clientY);
+
+                    let update = () => {
+                        let delta_time = (Date.now() - last) / 1000;
+                        last = Date.now();
+
+                        // update function
+                        flying_items.forEach(item => {
+                            // move
+                            item.elem.style.transform = `rotate(${item.rotation}deg)`;
+                            item.elem.style.left = `${item.tx}px`;
+                            item.elem.style.top = `${item.ty}px`;
+
+                            // update velocity
+                            item.tx += item.vx * delta_time;
+                            item.ty += item.vy * delta_time;
+
+                            // update rotation
+                            item.rotation += item.rotation_speed * delta_time;
+
+                            // update gravity
+                            item.vy += item.gravity * delta_time;
+
+                            if (item.ty >= window.innerHeight - 32) {
+                                item.elem.style.top = `${window.innerHeight - 32}px`;
+
+                                console.log("killing", item.killtime, Date.now());
+                                let bbox = item.elem.getBoundingClientRect();
+                                let expl = document.createElement("img");
+                                expl.className = "particle";
+                                expl.style.left = `${bbox.x - (148/2) + (12)}px`;
+                                expl.style.top = `${bbox.y - (124/2) + (12)}px`;
+                                expl.src = `explosion_small.gif?t=${Date.now()}`;
+
+                                document.body.appendChild(expl);
+
+                                setTimeout(() => {
+                                    expl.remove();
+                                }, 2000)
+
+                                item.elem.remove();
+                                item.killed = true;
+                            }
+                        })
+
+                        flying_items = flying_items.filter(item => !item.killed);
+
+                        window.requestAnimationFrame(update);
+                    }
+
+                    window.requestAnimationFrame(update);
+                })
+            })
+        </script>
+    </body>
+</html>
