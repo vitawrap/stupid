@@ -1,0 +1,28 @@
+body {
+    background-image: url("style/spacebackground.gif");
+    background-repeat: repeat;
+    color: white;
+    margin: 0px;
+    height: 100vh;
+}
+
+footer {
+    bottom: 0%;
+    position: fixed;
+    width: 100%;
+    text-align: center;
+    padding: 4px 0px;
+    background-color: black;
+}
+
+#display {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    flex-direction: column;
+}
+
+.main-canvas {
+    border: gray 4px groove;
+}
