@@ -6,6 +6,9 @@ import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 /** @type {THREE.WebGLRenderer} */
 let renderer;
 
+/** @type {THREE.Controls} */
+let controls;
+
 /** @type {THREE.Scene} */
 let scene;
 
@@ -15,9 +18,165 @@ let camera;
 /** @type {THREE.Object3D} */
 let object;
 
+/** @type {THREE.LoadingManager} */
+let manager;
+
+/* Util */
+
+/**
+ * Move value towards goal with a max delta
+ * @param {Number} a 
+ * @param {Number} b 
+ * @param {Number} maxDelta 
+ * @returns {Number} Updated value
+ */
+Math.moveTowards = (a, b, maxDelta) => {
+    if (Math.abs(b - a) <= maxDelta)
+        return b;
+    return a + Math.sign(b - a) * maxDelta;
+}
+
+/* Game */
+
+class AppletControl extends THREE.Controls {
+
+    constructor( object, domElement = null ) {
+        super(object, domElement);
+        this._onKeyDown = this.onKeyDown.bind(this);
+        this._onKeyUp = this.onKeyUp.bind(this);
+
+        if (domElement != null)
+            this.connect();
+    }
+
+    /**
+     * Key down event handler
+     * @param {KeyboardEvent} event 
+     */
+    onKeyDown(event) {
+        if (this.enabled === false) return;
+
+        const object = this.object;
+        if ('input' in object)
+            object.input(event.code, true);
+    }
+
+    /**
+     * Key up event handler
+     * @param {KeyboardEvent} event 
+     */
+    onKeyUp(event) {
+        if (this.enabled === false) return;
+
+        const object = this.object;
+        if ('input' in object)
+            object.input(event.code, false);
+    }
+
+    connect() {
+        window.addEventListener('keydown', this._onKeyDown);
+        window.addEventListener('keyup', this._onKeyUp);
+    }
+
+    disconnect() {
+        window.removeEventListener('keydown', this._onKeyDown);
+        window.removeEventListener('keyup', this._onKeyUp);
+    }
+
+    dispose() {
+        this.disconnect();
+    }
+
+    update(delta) {
+        if (this.enabled === false) return;
+    }
+}
+
+const YAW_PI = new THREE.Euler(0, Math.PI, 0);
+
+/**
+ * @param {Number} dt fraction of a second
+ * @this {THREE.Mesh} THREE mesh
+ */
+function spaceshipTick(dt) {
+
+    // Rotate based on velocity derived from steer
+    this.velocity.x = Math.moveTowards(this.velocity.x, this.steer.x, dt);
+    this.velocity.y = Math.moveTowards(this.velocity.y, this.steer.y, dt);
+    this.velocity.z = Math.moveTowards(this.velocity.z, this.steer.z, dt);
+    this.rotateZ(this.velocity.z * dt);
+    this.rotateY(this.velocity.y * dt);
+    this.rotateX(this.velocity.x * dt);
+
+    // Displace
+    this.linVel = Math.moveTowards(this.linVel, this.move, dt);
+    let heading = new THREE.Vector3();
+    this.getWorldDirection(heading);
+    heading.multiplyScalar(30 * (1 + this.linVel) * dt);
+    this.position.add(heading);
+
+    // Player ship: Manipulate the camera as well.
+    if (this.player) {
+        let thisQuat = this.quaternion.clone();
+        let relQuat = new THREE.Quaternion();
+        relQuat.setFromEuler(YAW_PI);
+        thisQuat.multiply(relQuat);
+        camera.quaternion.slerp(thisQuat, Math.min(10 * dt, 1.0));
+
+        const time = performance.now().valueOf();
+        let camPos = new THREE.Vector3(
+            0 + (Math.sin(time * 0.1) * 0.003),
+            1.5 + (Math.sin(time * 0.08) * 0.004),
+            -4 - this.linVel);
+        camPos = this.localToWorld(camPos);
+        camera.position.copy(camPos);
+    }
+}
+
+/**
+ * @param {string} keycode KeyboardEvent code
+ * @param {boolean} down true: down, false: up
+ */
+function spaceshipInput(keycode, down) {
+    switch (keycode) {
+        // Throttle
+        case 'ShiftLeft':
+        case 'ShiftRight': this.move = down * -2.0; break;
+        case 'Space': this.move = down * 2.0;  break;
+
+        // Pitch
+        case 'KeyW': this.steer.x = down * 2.0;  break;
+        case 'KeyS': this.steer.x = down * -2.0; break;
+
+        // Yaw
+        case 'KeyA': this.steer.y = down * 2.0;  break;
+        case 'KeyD': this.steer.y = down * -2.0; break;
+
+        // Roll
+        case 'KeyE': this.steer.z = down * 2.0;  break;
+        case 'KeyQ': this.steer.z = down * -2.0; break;
+    }
+}
+
+/**
+ * @this {THREE.Mesh} THREE mesh
+ */
+function spaceshipInit(isPlayer) {
+    this.player = isPlayer;                     // Flag for locally controlled spaceship
+    this.velocity = new THREE.Vector3(0, 0, 0); // Angular velocity
+    this.steer = new THREE.Vector3(0, 0, 0);    // input strength: for each axis (PYR)
+    
+    this.linVel = 0.0;                          // Linear velocity (forward)
+    this.move = 0.0;                            // input strength: forward
+}
+
+/* Application code */
+
 function gameInitialize() {
+    controls = new AppletControl();
+    manager = new THREE.LoadingManager();
+    camera = new THREE.PerspectiveCamera(75, 1, 0.1, 3000);
     scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(75);
 
     renderer = new THREE.WebGLRenderer();
     renderer.setSize(800, 600);
@@ -26,27 +185,61 @@ function gameInitialize() {
 
     const display = document.getElementById("canvas-display");
     display.appendChild(renderer.domElement);
+    controls.domElement = renderer.domElement;
+    controls.connect();
 
-    const loader = new PLYLoader();
+    const loader = new PLYLoader(manager);
     loader.load("Spaceship/assets/ship.ply", (buf) => {
         const material = new THREE.MeshPhongMaterial();
         object = new THREE.Mesh(buf, material);
         scene.add(object);
         object.position.z = -4
-        object.rotateX(2.4);
-        object.rotateY(0.5);
+        
+        object.tick = spaceshipTick;
+        object.input = spaceshipInput;
+        spaceshipInit.bind(object)(true);
+
+        controls.object = object;
     });
+
+    // spawn some planets as a test
+    const position = new THREE.Vector3();
+    for (let i = 0; i < 200; ++i) {
+        position.set(
+            (Math.random() * 2000) - 1000,
+            (Math.random() * 2000) - 1000,
+            (Math.random() * 2000) - 1000);
+        
+        let mat = new THREE.MeshPhongMaterial();
+        mat.color.set(Math.random(), Math.random(), Math.random());
+        const planet = new THREE.Mesh(
+            new THREE.SphereGeometry(Math.random() * 10, 16, 8),
+            mat);
+        planet.position.copy(position);
+        scene.add(planet);
+    }
 
     const amb = new THREE.AmbientLight( 0x404040 );
     const sun = new THREE.DirectionalLight( 0xFFFFFF, 0.8 );
     scene.add( amb, sun );
 }
 
+let lastNow = performance.timeOrigin;
+
 function gameAnimate() {
-    if (object != undefined)
-        object.rotateY(0.1);
+    const now = performance.now();
+    const dt = (now - lastNow) * 0.001; // fraction of a second
+
+    controls.update(dt);
+
+    scene.traverse((object) => {
+        if ('tick' in object)
+            object.tick(dt);
+    });
 
     renderer.render(scene, camera);
+    lastNow = now;
 }
 
+// TODO: Play button initializes the app
 gameInitialize();
