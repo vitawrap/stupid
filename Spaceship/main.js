@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js'
-import { MeshBVH, acceleratedRaycast } from 'three-mesh-bvh';
+import { MeshBVH, acceleratedRaycast } from './three-mesh-bvh.js';
 
 /** @type {THREE.WebGLRenderer} */
 let renderer;
