@@ -2,6 +2,8 @@
 
 import * as THREE from 'three';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js'
+import { MeshBVH, acceleratedRaycast } from 'three-mesh-bvh';
 
 /** @type {THREE.WebGLRenderer} */
 let renderer;
@@ -20,6 +22,11 @@ let object;
 
 /** @type {THREE.LoadingManager} */
 let manager;
+
+/** @type {THREE.Mesh} 
+ * Collision mesh for planets
+ */
+let planets;
 
 /* Util */
 
@@ -112,6 +119,14 @@ function spaceshipTick(dt) {
     this.linVel = Math.moveTowards(this.linVel, this.move, dt);
     let heading = new THREE.Vector3();
     this.getWorldDirection(heading);
+
+    // Raycast test
+    let raycaster = this.raycaster;
+    raycaster.set(this.position, heading);
+    let hits = raycaster.intersectObject(planets, false, []);
+    if (hits.length && hits[0].distance < 20)
+        console.log("critical: ", hits[0].distance);
+
     heading.multiplyScalar(30 * (1 + this.linVel) * dt);
     this.position.add(heading);
 
@@ -168,6 +183,9 @@ function spaceshipInit(isPlayer) {
     
     this.linVel = 0.0;                          // Linear velocity (forward)
     this.move = 0.0;                            // input strength: forward
+
+    this.raycaster = new THREE.Raycaster();     // Ship raycaster
+    this.raycaster.firstHitOnly = true;         // BVH setting
 }
 
 /* Application code */
@@ -175,7 +193,7 @@ function spaceshipInit(isPlayer) {
 function gameInitialize() {
     controls = new AppletControl();
     manager = new THREE.LoadingManager();
-    camera = new THREE.PerspectiveCamera(75, 1, 0.1, 3000);
+    camera = new THREE.PerspectiveCamera(75, 1, 0.1, 8000);
     scene = new THREE.Scene();
 
     renderer = new THREE.WebGLRenderer();
@@ -202,22 +220,31 @@ function gameInitialize() {
         controls.object = object;
     });
 
-    // spawn some planets as a test
+    // spawn some planets as a test, their visuals are separated from the collision
     const position = new THREE.Vector3();
+    const geoms = [];
+    const visuals = [];
     for (let i = 0; i < 200; ++i) {
         position.set(
-            (Math.random() * 2000) - 1000,
-            (Math.random() * 2000) - 1000,
-            (Math.random() * 2000) - 1000);
+            (Math.random() * 8000) - 4000,
+            (Math.random() * 8000) - 4000,
+            (Math.random() * 8000) - 4000);
         
         let mat = new THREE.MeshPhongMaterial();
         mat.color.set(Math.random(), Math.random(), Math.random());
-        const planet = new THREE.Mesh(
-            new THREE.SphereGeometry(Math.random() * 10, 16, 8),
-            mat);
-        planet.position.copy(position);
-        scene.add(planet);
+        const pgeom = new THREE.SphereGeometry(Math.random() * 200, 16, 8);
+        let visual = new THREE.Mesh(pgeom, mat);
+        pgeom.translate(position);
+        geoms.push(pgeom);
+        visuals.push(visual);
     }
+    const geom = BufferGeometryUtils.mergeGeometries(geoms, true);
+    planets = new THREE.Mesh(geom);
+    planets.visible = false;
+    scene.add(planets, ...visuals);
+
+    planets.raycast = acceleratedRaycast;
+    geom.boundsTree = new MeshBVH(geom);
 
     const amb = new THREE.AmbientLight( 0x404040 );
     const sun = new THREE.DirectionalLight( 0xFFFFFF, 0.8 );
