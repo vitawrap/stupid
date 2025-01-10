@@ -141,7 +141,7 @@ function spaceshipTick(dt) {
                 const shipPos = this.position.clone();
                 const shipNor = new THREE.Vector3();
                 this.getWorldDirection(shipNor);
-                this.shipNormal = shipNor;
+                this.shipNormal = shipNor.multiplyScalar(1.1);  // small offset to get out of dist
                 this.orbitNormal = shipPos.sub(target.point).normalize();
                 this.timer = 1.0;
                 this.state = SHIP_STATE_IDLE;
