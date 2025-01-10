@@ -155,7 +155,6 @@ function spaceshipTick(dt) {
             const vec = this.orbitNormal.clone();
             vec.lerp(this.shipNormal, this.timer);
             vec.add(this.position);
-            console.log(vec);
             object.lookAt(vec);
             if (this.timer <= 0.0)
                 this.state = SHIP_STATE_FLY;
@@ -235,6 +234,49 @@ function spaceshipInit(visual, isPlayer) {
     }
 }
 
+/**
+ * Use THREE's seeded random, but with an increasing seed.
+ * @param {Number} initialSeed Seed to start builder with
+ */
+function seededRandomBuilder(initialSeed) {
+    let seed = initialSeed;
+    return () => {
+        ++seed;
+        return THREE.MathUtils.seededRandom(seed);
+    };
+}
+
+/** 
+ * Sets the "planet" variable
+ * @param {function(): Number} seededRand Seeded random function (optionally with bound args)
+ */
+function initPlanets(seededRand) {
+    // spawn some planets as a test, their visuals are separated from the collision
+    const position = new THREE.Vector3();
+    const geoms = [];
+    const visuals = [];
+    for (let i = 0; i < 100; ++i) {
+        position.set(
+            (seededRand() * 8000) - 4000,
+            (seededRand() * 8000) - 4000,
+            (seededRand() * 8000) - 4000);
+        
+        let mat = new THREE.MeshPhongMaterial();
+        mat.color.set(seededRand(), seededRand(), seededRand());
+        const pgeom = new THREE.SphereGeometry(seededRand() * 200, 16, 8);
+        let visual = new THREE.Mesh(pgeom, mat);
+        pgeom.translate(position);
+        geoms.push(pgeom);
+        visuals.push(visual);
+    }
+    const geom = BufferGeometryUtils.mergeGeometries(geoms, true);
+    planets = new THREE.Mesh(geom);
+    planets.visible = false;
+    scene.add(planets, ...visuals);
+
+    geom.boundsTree = new MeshBVH(geom);
+}
+
 /* Application code */
 
 function gameInitialize() {
@@ -280,30 +322,8 @@ function gameInitialize() {
         object.state = SHIP_STATE_ORIENT;
     });
 
-    // spawn some planets as a test, their visuals are separated from the collision
-    const position = new THREE.Vector3();
-    const geoms = [];
-    const visuals = [];
-    for (let i = 0; i < 100; ++i) {
-        position.set(
-            (Math.random() * 8000) - 4000,
-            (Math.random() * 8000) - 4000,
-            (Math.random() * 8000) - 4000);
-        
-        let mat = new THREE.MeshPhongMaterial();
-        mat.color.set(Math.random(), Math.random(), Math.random());
-        const pgeom = new THREE.SphereGeometry(Math.random() * 200, 16, 8);
-        let visual = new THREE.Mesh(pgeom, mat);
-        pgeom.translate(position);
-        geoms.push(pgeom);
-        visuals.push(visual);
-    }
-    const geom = BufferGeometryUtils.mergeGeometries(geoms, true);
-    planets = new THREE.Mesh(geom);
-    planets.visible = false;
-    scene.add(planets, ...visuals);
-
-    geom.boundsTree = new MeshBVH(geom);
+    const seededRandom = seededRandomBuilder(0xDEADBEEF);
+    initPlanets(seededRandom);
 
     const amb = new THREE.AmbientLight( 0x404040 );
     const sun = new THREE.DirectionalLight( 0xFFFFFF, 0.8 );
