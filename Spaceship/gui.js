@@ -20,6 +20,9 @@ export class GUI extends EventTarget {
     /** @type {HTMLButtonElement} */
     orbitDeny;
 
+    /** @type {HTMLElement} */
+    coinsCount;
+
     /**
      * TODO: Better GUI system than hardcoded gui elements.
      * @param {string} element ID of root dom element
@@ -30,8 +33,11 @@ export class GUI extends EventTarget {
         this.orbitRoot = document.getElementById("gui-enterorbit");
         this.orbitAccept = document.getElementById("gui-enterorbit-accept");
         this.orbitDeny = document.getElementById("gui-enterorbit-deny");
-
+        
         this.orbitRoot.hidden = true;
+
+        this.coinsCount = document.getElementById("gui-coins-count");
+        this.refreshCoins();
 
         this.orbitAcceptFn =
             (() => { this.dispatchEvent(new Event("orbitaccept")); }).bind(this);
@@ -61,5 +67,19 @@ export class GUI extends EventTarget {
      */
     hideOrbitPrompt(hide) {
         this.orbitRoot.hidden = hide;
+    }
+
+    /**
+     * Get coins from localstorage
+     */
+    get coins() {
+        return Number.parseInt(localStorage.getItem('coins') || "0");
+    }
+
+    /**
+     * Use "coins" getter and refresh coin count on the screen.
+     */
+    refreshCoins() {
+        this.coinsCount.innerText = this.coins;
     }
 }

@@ -48,3 +48,16 @@ footer {
 #gui-enterorbit button:hover {
     background-color: blue;
 }
+
+#gui-coins {
+    position: absolute;
+    bottom: 2%;
+    right: 2%;
+
+    display: flex;
+    align-items: center;
+}
+
+#gui-coins-count {
+    margin-right: 8px;
+}
