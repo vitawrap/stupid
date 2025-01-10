@@ -27,7 +27,7 @@ export class Game {
     /** @type {THREE.Camera} */
     camera;
 
-    /** @type {Spaceship} */
+    /** @type {Ship.Spaceship} */
     object;
 
     /** @type {THREE.LoadingManager} */
@@ -177,12 +177,14 @@ function gameInitialize() {
 
     gui.addEventListener("orbitaccept", (e) => {
         gui.hideOrbitPrompt(true);
-        game.object.state = Ship.SHIP_STATE_ORBIT;
+        if (game.object.state == Ship.SHIP_STATE_IDLE)
+            game.object.state = Ship.SHIP_STATE_ORBIT;
     });
 
     gui.addEventListener("orbitdeny", (e) => {
         gui.hideOrbitPrompt(true);
-        game.object.state = Ship.SHIP_STATE_ORIENT;
+        if (game.object.state == Ship.SHIP_STATE_IDLE)
+            game.object.state = Ship.SHIP_STATE_ORIENT;
     });
 
     const seededRandom = seededRandomBuilder(0xDEADBEEF);
