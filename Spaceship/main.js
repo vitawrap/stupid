@@ -217,13 +217,12 @@ function gameInitialize() {
     camera = new THREE.PerspectiveCamera(75, 1, 0.1, 8000);
     scene = new THREE.Scene();
 
-    renderer = new THREE.WebGLRenderer();
+    renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("3js-viewer") });
     renderer.setSize(800, 600);
     renderer.domElement.className = "main-canvas";
     renderer.setAnimationLoop(gameAnimate);
 
     const display = document.getElementById("canvas-display");
-    display.appendChild(renderer.domElement);
     controls.domElement = renderer.domElement;
     controls.connect();
 
