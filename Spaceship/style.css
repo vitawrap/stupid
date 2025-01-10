@@ -26,3 +26,23 @@ footer {
 .main-canvas {
     border: gray 4px groove;
 }
+
+#canvas-display {
+    font-family: 'Courier New', Courier, monospace;
+    overflow: hidden;
+}
+
+#gui-enterorbit {
+    position: absolute;
+    left: 50%;
+    bottom: 5%;
+    transform: translate(-50%, 0%);
+
+    background-color: darkblue;
+    color: white;
+    font-family: inherit;
+}
+
+#gui-enterorbit:hover {
+    background-color: blue;
+}
