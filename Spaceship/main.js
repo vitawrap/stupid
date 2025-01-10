@@ -3,51 +3,44 @@
 import * as THREE from 'three';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js'
-import { MeshBVH, acceleratedRaycast } from './three-mesh-bvh.js';
+import { MeshBVH } from './three-mesh-bvh.js';
+
 import { GUI } from './gui.js';
+import { moveTowards, seededRandomBuilder } from './util.js';
+import * as Ship from './ship.js';
 
-/** @typedef {THREE.Object3D & {state: Number, player: boolean, timer: Number}} Spaceship */
+Math.moveTowards = moveTowards;
 
-/** @type {THREE.WebGLRenderer} */
-let renderer;
+export class Game {
+    /** @type {THREE.WebGLRenderer} */
+    renderer;
 
-/** @type {THREE.Controls} */
-let controls;
+    /** @type {THREE.Controls} */
+    controls;
 
-/** @type {GUI} */
-let gui;
+    /** @type {GUI} */
+    gui;
 
-/** @type {THREE.Scene} */
-let scene;
+    /** @type {THREE.Scene} */
+    scene;
 
-/** @type {THREE.Camera} */
-let camera;
+    /** @type {THREE.Camera} */
+    camera;
 
-/** @type {Spaceship} */
-let object;
+    /** @type {Spaceship} */
+    object;
 
-/** @type {THREE.LoadingManager} */
-let manager;
+    /** @type {THREE.LoadingManager} */
+    manager;
 
-/** @type {THREE.Mesh} 
- * Collision mesh for planets
- */
-let planets;
-
-/* Util */
-
-/**
- * Move value towards goal with a max delta
- * @param {Number} a 
- * @param {Number} b 
- * @param {Number} maxDelta 
- * @returns {Number} Updated value
- */
-Math.moveTowards = (a, b, maxDelta) => {
-    if (Math.abs(b - a) <= maxDelta)
-        return b;
-    return a + Math.sign(b - a) * maxDelta;
+    /** @type {THREE.Mesh} 
+     * Collision mesh for planets
+     */
+    planets;
 }
+
+/** @type {Game} */
+globalThis.game = null;
 
 /* Game */
 
@@ -105,147 +98,6 @@ class AppletControl extends THREE.Controls {
     }
 }
 
-const YAW_PI = new THREE.Euler(0, Math.PI, 0);
-const SHIP_STATE_IDLE = -1;
-const SHIP_STATE_FLY = 0;
-const SHIP_STATE_ORBIT = 1;
-const SHIP_STATE_ORIENT = 2;
-
-/**
- * @param {Number} dt fraction of a second
- * @this {Spaceship} ship object
- */
-function spaceshipTick(dt) {
-
-    switch (this.state) {
-        case SHIP_STATE_FLY:
-            // Rotate based on velocity derived from steer
-            this.velocity.x = Math.moveTowards(this.velocity.x, this.steer.x, dt);
-            this.velocity.y = Math.moveTowards(this.velocity.y, this.steer.y, dt);
-            this.velocity.z = Math.moveTowards(this.velocity.z, this.steer.z, dt);
-            this.rotateZ(this.velocity.z * dt);
-            this.rotateY(this.velocity.y * dt);
-            this.rotateX(this.velocity.x * dt);
-
-            // Displace
-            this.linVel = Math.moveTowards(this.linVel, this.move, dt);
-            const heading = new THREE.Vector3();
-            this.getWorldDirection(heading);
-            heading.multiplyScalar(30 * (1 + this.linVel) * dt);
-            this.position.add(heading);
-
-            // Get closest distance to planet
-            /** @type {MeshBVH} */ const bvh = planets.geometry.boundsTree;
-            const target = bvh.closestPointToPoint(this.position);
-            if (target.distance <= 20) {
-                const shipPos = this.position.clone();
-                const shipNor = new THREE.Vector3();
-                this.getWorldDirection(shipNor);
-                this.shipNormal = shipNor.multiplyScalar(1.1);  // small offset to get out of dist
-                this.orbitNormal = shipPos.sub(target.point).normalize();
-                this.timer = 1.0;
-                this.state = SHIP_STATE_IDLE;
-                gui.hideOrbitPrompt(false);
-            }
-        break;
-
-        // Ship has to back up (interp this.shipNormal -> this.orbitNormal)
-        case SHIP_STATE_ORIENT:
-            this.timer -= (dt * 0.5);
-            const vec = this.orbitNormal.clone();
-            vec.lerp(this.shipNormal, this.timer);
-            vec.add(this.position);
-            object.lookAt(vec);
-            if (this.timer <= 0.0)
-                this.state = SHIP_STATE_FLY;
-        break;
-
-        // Simulate flying into orbit
-        case SHIP_STATE_ORBIT:
-            this.timer -= (dt * 0.5);
-            const scl = Math.max(this.timer, 0.01);
-            this.visual.scale.copy(new THREE.Vector3(scl, scl, scl));
-            if (this.timer <= 0.0)
-                this.state = SHIP_STATE_IDLE;
-        break;
-    }
-
-    // Player ship: Manipulate the camera as well.
-    if (this.player) {
-        let thisQuat = this.quaternion.clone();
-        let relQuat = new THREE.Quaternion();
-        relQuat.setFromEuler(YAW_PI);
-        thisQuat.multiply(relQuat);
-        camera.quaternion.slerp(thisQuat, Math.min(10 * dt, 1.0));
-
-        const time = performance.now().valueOf();
-        let camPos = new THREE.Vector3(
-            0 + (Math.sin(time * 0.1) * 0.003),
-            1.5 + (Math.sin(time * 0.08) * 0.004),
-            -4 - this.linVel);
-        camPos = this.localToWorld(camPos);
-        camera.position.copy(camPos);
-    }
-}
-
-/**
- * @param {string} keycode KeyboardEvent code
- * @param {boolean} down true: down, false: up
- * @this {Spaceship} ship object
- */
-function spaceshipInput(keycode, down) {
-    switch (keycode) {
-        // Throttle
-        case 'ShiftLeft':
-        case 'ShiftRight': this.move = down * -2.0; break;
-        case 'Space': this.move = down * 2.0;  break;
-
-        // Pitch
-        case 'KeyW': this.steer.x = down * 2.0;  break;
-        case 'KeyS': this.steer.x = down * -2.0; break;
-
-        // Yaw
-        case 'KeyA': this.steer.y = down * 2.0;  break;
-        case 'KeyD': this.steer.y = down * -2.0; break;
-
-        // Roll
-        case 'KeyE': this.steer.z = down * 2.0;  break;
-        case 'KeyQ': this.steer.z = down * -2.0; break;
-    }
-}
-
-/**
- * @this {Spaceship} ship object
- */
-function spaceshipInit(visual, isPlayer) {
-    this.player = isPlayer;                     // Flag for locally controlled spaceship
-    this.velocity = new THREE.Vector3(0, 0, 0); // Angular velocity
-    this.steer = new THREE.Vector3(0, 0, 0);    // input strength: for each axis (PYR)
-    
-    this.linVel = 0.0;                          // Linear velocity (forward)
-    this.move = 0.0;                            // input strength: forward
-    this.state = SHIP_STATE_FLY;                // Ship state
-    this.timer = 0.0;                           // State timer
-
-    // Child mesh object
-    if (visual instanceof THREE.Mesh) {
-        visual.scale.set(1, 1, 1);
-        this.visual = visual;
-    }
-}
-
-/**
- * Use THREE's seeded random, but with an increasing seed.
- * @param {Number} initialSeed Seed to start builder with
- */
-function seededRandomBuilder(initialSeed) {
-    let seed = initialSeed;
-    return () => {
-        ++seed;
-        return THREE.MathUtils.seededRandom(seed);
-    };
-}
-
 /** 
  * Sets the "planet" variable
  * @param {function(): Number} seededRand Seeded random function (optionally with bound args)
@@ -270,9 +122,9 @@ function initPlanets(seededRand) {
         visuals.push(visual);
     }
     const geom = BufferGeometryUtils.mergeGeometries(geoms, true);
-    planets = new THREE.Mesh(geom);
-    planets.visible = false;
-    scene.add(planets, ...visuals);
+    game.planets = new THREE.Mesh(geom);
+    game.planets.visible = false;
+    game.scene.add(game.planets, ...visuals);
 
     geom.boundsTree = new MeshBVH(geom);
 }
@@ -280,18 +132,25 @@ function initPlanets(seededRand) {
 /* Application code */
 
 function gameInitialize() {
-    gui = new GUI("canvas-display");
-    controls = new AppletControl();
-    manager = new THREE.LoadingManager();
-    camera = new THREE.PerspectiveCamera(75, 1, 0.1, 8000);
-    scene = new THREE.Scene();
+    game = new Game();
+    let gui = new GUI("canvas-display");
+    let controls = new AppletControl();
+    let manager = new THREE.LoadingManager();
+    let camera = new THREE.PerspectiveCamera(75, 1, 0.1, 8000);
+    let scene = new THREE.Scene();
 
-    renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("3js-viewer") });
+    let renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("3js-viewer") });
     renderer.setSize(800, 600);
     renderer.domElement.className = "main-canvas";
     renderer.setAnimationLoop(gameAnimate);
 
-    const display = document.getElementById("canvas-display");
+    game.camera = camera;
+    game.controls = controls;
+    game.renderer = renderer;
+    game.manager = manager;
+    game.scene = scene;
+    game.gui = gui;
+
     controls.domElement = renderer.domElement;
     controls.connect();
     gui.connect();
@@ -300,26 +159,27 @@ function gameInitialize() {
     loader.load("Spaceship/assets/ship.ply", (buf) => {
         const material = new THREE.MeshPhongMaterial();
         const spVisual = new THREE.Mesh(buf, material);
-        object = new THREE.Object3D();
+        let object = new THREE.Object3D();
         object.add(spVisual);
         scene.add(object);
         object.position.z = -4
         
-        object.tick = spaceshipTick;
-        object.input = spaceshipInput;
-        spaceshipInit.bind(object)(spVisual, true);
+        game.object = object;
+        object.tick = Ship.spaceshipTick;
+        object.input = Ship.spaceshipInput;
+        Ship.spaceshipInit.bind(object)(game, spVisual, true);
 
         controls.object = object;
     });
 
     gui.addEventListener("orbitaccept", (e) => {
         gui.hideOrbitPrompt(true);
-        object.state = SHIP_STATE_ORBIT;
+        game.object.state = Ship.SHIP_STATE_ORBIT;
     });
 
     gui.addEventListener("orbitdeny", (e) => {
         gui.hideOrbitPrompt(true);
-        object.state = SHIP_STATE_ORIENT;
+        game.object.state = Ship.SHIP_STATE_ORIENT;
     });
 
     const seededRandom = seededRandomBuilder(0xDEADBEEF);
@@ -336,14 +196,14 @@ function gameAnimate() {
     const now = performance.now();
     const dt = (now - lastNow) * 0.001; // fraction of a second
 
-    controls.update(dt);
+    game.controls.update(dt);
 
-    scene.traverse((object) => {
+    game.scene.traverse((object) => {
         if ('tick' in object)
             object.tick(dt);
     });
 
-    renderer.render(scene, camera);
+    game.renderer.render(game.scene, game.camera);
     lastNow = now;
 }
 
