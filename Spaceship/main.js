@@ -165,7 +165,7 @@ function gameInitialize() {
         let object = new THREE.Object3D();
         object.add(spVisual);
         scene.add(object);
-        object.position.z = -4
+        object.position.z = -4;
         
         game.object = object;
         object.tick = Ship.spaceshipTick;
@@ -173,18 +173,18 @@ function gameInitialize() {
         Ship.spaceshipInit.bind(object)(game, spVisual, true);
 
         controls.object = object;
-    });
 
-    gui.addEventListener("orbitaccept", (e) => {
-        gui.hideOrbitPrompt(true);
-        if (game.object.state == Ship.SHIP_STATE_IDLE)
-            game.object.state = Ship.SHIP_STATE_ORBIT;
-    });
-
-    gui.addEventListener("orbitdeny", (e) => {
-        gui.hideOrbitPrompt(true);
-        if (game.object.state == Ship.SHIP_STATE_IDLE)
-            game.object.state = Ship.SHIP_STATE_ORIENT;
+        gui.addEventListener("orbitaccept", (e) => {
+            gui.hideOrbitPrompt(true);
+            if (game.object.state == Ship.SHIP_STATE_IDLE)
+                game.object.state = Ship.SHIP_STATE_ORBIT;
+        });
+    
+        gui.addEventListener("orbitdeny", (e) => {
+            gui.hideOrbitPrompt(true);
+            if (game.object.state == Ship.SHIP_STATE_IDLE)
+                game.object.state = Ship.SHIP_STATE_ORIENT;
+        });
     });
 
     const seededRandom = seededRandomBuilder(0xDEADBEEF);
