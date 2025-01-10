@@ -109,6 +109,7 @@ const YAW_PI = new THREE.Euler(0, Math.PI, 0);
 const SHIP_STATE_IDLE = -1;
 const SHIP_STATE_FLY = 0;
 const SHIP_STATE_ORBIT = 1;
+const SHIP_STATE_ORIENT = 2;
 
 /**
  * @param {Number} dt fraction of a second
@@ -128,7 +129,7 @@ function spaceshipTick(dt) {
 
             // Displace
             this.linVel = Math.moveTowards(this.linVel, this.move, dt);
-            let heading = new THREE.Vector3();
+            const heading = new THREE.Vector3();
             this.getWorldDirection(heading);
             heading.multiplyScalar(30 * (1 + this.linVel) * dt);
             this.position.add(heading);
@@ -137,9 +138,27 @@ function spaceshipTick(dt) {
             /** @type {MeshBVH} */ const bvh = planets.geometry.boundsTree;
             const target = bvh.closestPointToPoint(this.position);
             if (target.distance <= 20) {
+                const shipPos = this.position.clone();
+                const shipNor = new THREE.Vector3();
+                this.getWorldDirection(shipNor);
+                this.shipNormal = shipNor;
+                this.orbitNormal = shipPos.sub(target.point).normalize();
+                this.timer = 1.0;
                 this.state = SHIP_STATE_IDLE;
                 gui.hideOrbitPrompt(false);
             }
+        break;
+
+        // Ship has to back up (interp this.shipNormal -> this.orbitNormal)
+        case SHIP_STATE_ORIENT:
+            this.timer -= (dt * 0.5);
+            const vec = this.orbitNormal.clone();
+            vec.lerp(this.shipNormal, this.timer);
+            vec.add(this.position);
+            console.log(vec);
+            object.lookAt(vec);
+            if (this.timer <= 0.0)
+                this.state = SHIP_STATE_FLY;
         break;
 
         // Simulate flying into orbit
@@ -254,7 +273,11 @@ function gameInitialize() {
     gui.addEventListener("orbitaccept", (e) => {
         gui.hideOrbitPrompt(true);
         object.state = SHIP_STATE_ORBIT;
-        object.timer = 1.0;
+    });
+
+    gui.addEventListener("orbitdeny", (e) => {
+        gui.hideOrbitPrompt(true);
+        object.state = SHIP_STATE_ORIENT;
     });
 
     // spawn some planets as a test, their visuals are separated from the collision
