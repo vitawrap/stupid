@@ -37,12 +37,14 @@ footer {
     left: 50%;
     bottom: 5%;
     transform: translate(-50%, 0%);
+}
 
+#gui-enterorbit button {
     background-color: darkblue;
     color: white;
     font-family: inherit;
 }
 
-#gui-enterorbit:hover {
+#gui-enterorbit button:hover {
     background-color: blue;
 }

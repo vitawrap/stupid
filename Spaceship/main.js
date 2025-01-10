@@ -4,6 +4,9 @@ import * as THREE from 'three';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import { MeshBVH, acceleratedRaycast } from './three-mesh-bvh.js';
+import { GUI } from './gui.js';
+
+/** @typedef {THREE.Object3D & {state: Number, player: boolean, timer: Number}} Spaceship */
 
 /** @type {THREE.WebGLRenderer} */
 let renderer;
@@ -11,13 +14,16 @@ let renderer;
 /** @type {THREE.Controls} */
 let controls;
 
+/** @type {GUI} */
+let gui;
+
 /** @type {THREE.Scene} */
 let scene;
 
 /** @type {THREE.Camera} */
 let camera;
 
-/** @type {THREE.Object3D} */
+/** @type {Spaceship} */
 let object;
 
 /** @type {THREE.LoadingManager} */
@@ -106,7 +112,7 @@ const SHIP_STATE_ORBIT = 1;
 
 /**
  * @param {Number} dt fraction of a second
- * @this {THREE.Mesh} THREE mesh
+ * @this {Spaceship} ship object
  */
 function spaceshipTick(dt) {
 
@@ -130,9 +136,9 @@ function spaceshipTick(dt) {
             // Get closest distance to planet
             /** @type {MeshBVH} */ const bvh = planets.geometry.boundsTree;
             const target = bvh.closestPointToPoint(this.position);
-            if (target.distance <= 30) {
-                this.state = SHIP_STATE_ORBIT;
-                this.timer = 1.0;
+            if (target.distance <= 20) {
+                this.state = SHIP_STATE_IDLE;
+                gui.hideOrbitPrompt(false);
             }
         break;
 
@@ -167,6 +173,7 @@ function spaceshipTick(dt) {
 /**
  * @param {string} keycode KeyboardEvent code
  * @param {boolean} down true: down, false: up
+ * @this {Spaceship} ship object
  */
 function spaceshipInput(keycode, down) {
     switch (keycode) {
@@ -190,7 +197,7 @@ function spaceshipInput(keycode, down) {
 }
 
 /**
- * @this {THREE.Mesh} THREE mesh
+ * @this {Spaceship} ship object
  */
 function spaceshipInit(visual, isPlayer) {
     this.player = isPlayer;                     // Flag for locally controlled spaceship
@@ -212,6 +219,7 @@ function spaceshipInit(visual, isPlayer) {
 /* Application code */
 
 function gameInitialize() {
+    gui = new GUI("canvas-display");
     controls = new AppletControl();
     manager = new THREE.LoadingManager();
     camera = new THREE.PerspectiveCamera(75, 1, 0.1, 8000);
@@ -225,6 +233,7 @@ function gameInitialize() {
     const display = document.getElementById("canvas-display");
     controls.domElement = renderer.domElement;
     controls.connect();
+    gui.connect();
 
     const loader = new PLYLoader(manager);
     loader.load("Spaceship/assets/ship.ply", (buf) => {
@@ -240,6 +249,12 @@ function gameInitialize() {
         spaceshipInit.bind(object)(spVisual, true);
 
         controls.object = object;
+    });
+
+    gui.addEventListener("orbitaccept", (e) => {
+        gui.hideOrbitPrompt(true);
+        object.state = SHIP_STATE_ORBIT;
+        object.timer = 1.0;
     });
 
     // spawn some planets as a test, their visuals are separated from the collision
