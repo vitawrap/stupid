@@ -67,14 +67,22 @@ export class Planet {
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(70, 1, 0.1, 1000.0);
 
-            const plane = new THREE.Mesh(new THREE.PlaneGeometry(7500, 7500, 255, 255));
-            scene.add(plane);
-            plane.position.set(0, -8, 0);
-            plane.rotateX(Math.PI * -0.5);
-
             scene.background = new THREE.Color(0x20104b);
             scene.fog = new THREE.FogExp2(0x20104b, 0.0025);
 
+            const tex = this.#manager.textureLoader.load(this.textureName);
+            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+            tex.repeat.set(16, 16);
+            const mat = new THREE.MeshPhongMaterial({ color: this.color, map: tex })
+
+            const plane = new THREE.Mesh(new THREE.PlaneGeometry(7500, 7500, 255, 255), mat);
+            plane.position.set(0, -8, 0);
+            plane.rotateX(Math.PI * -0.5);
+            
+            const amb = new THREE.AmbientLight( 0x404040 );
+            const sun = new THREE.DirectionalLight( 0xFFFFFF, 0.8 );
+            
+            scene.add(amb, sun, plane);
             this.#scene = scene;
             this.#scene.camera = camera;
         }
@@ -172,6 +180,13 @@ export class PlanetManager {
      */
     get mesh() {
         return this.#mesh;
+    }
+
+    /**
+     * Get the texture loader of this manager
+     */
+    get textureLoader() {
+        return this.#textureLoader;
     }
 
     /**
