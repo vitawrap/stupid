@@ -107,10 +107,14 @@ function initPlanets(seededRand) {
         let mat = new THREE.MeshPhongMaterial();
         mat.color.set(seededRand(), seededRand(), seededRand());
         const pgeom = new THREE.SphereGeometry(seededRand() * 200, 16, 8);
-        let visual = new THREE.Mesh(pgeom, mat);
+        
+        let visual = new THREE.Mesh(pgeom.clone(), mat);
+        visual.position.copy(position);
+        visual.tick = function(dt) { this.rotateZ(dt * 0.01); };
+        visuals.push(visual);
+
         pgeom.translate(position);
         geoms.push(pgeom);
-        visuals.push(visual);
     }
     const geom = BufferGeometryUtils.mergeGeometries(geoms, true);
     game.scene.planets = new THREE.Mesh(geom);
@@ -187,6 +191,10 @@ function gameInitialize() {
 
         const amb = new THREE.AmbientLight( 0x404040 );
         const sun = new THREE.DirectionalLight( 0xFFFFFF, 0.8 );
+        sun.tick = function(dt) {
+            this.position.set(Math.sin(performance.now() * 0.00001),
+                Math.cos(performance.now() * 0.00001, 0));
+        }
         scene.add( amb, sun );
     }
 
