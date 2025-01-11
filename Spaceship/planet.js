@@ -80,6 +80,11 @@ export class Planet {
         }
         return this.#scene;
     }
+
+    /** Get texture name from planet seed */
+    get textureName() {
+        return textures[Math.abs(this.seed) % textures.length];
+    }
 }
 
 /**
@@ -136,7 +141,7 @@ export class PlanetManager {
 
             let mat = new THREE.MeshPhongMaterial({
                 color: v.color,
-                map: this.#textureLoader.load(textures[Math.abs(v.seed) % textures.length])
+                map: this.#textureLoader.load(v.textureName)
             });
             const pgeom = new THREE.SphereGeometry(v.radius, 16, 8);
             
