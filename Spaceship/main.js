@@ -187,7 +187,14 @@ function gameInitialize() {
         });
     });
 
-    const seededRandom = seededRandomBuilder(0xDEADBEEF);
+    // Get or initialize seed in local storage
+    let seed = localStorage.getItem("seed");
+    if (seed === null) {
+        seed = Math.random() * Number.MAX_SAFE_INTEGER;
+        localStorage.setItem("seed", seed);
+    }
+
+    const seededRandom = seededRandomBuilder(seed);
     initPlanets(seededRandom);
 
     const amb = new THREE.AmbientLight( 0x404040 );
