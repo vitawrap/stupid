@@ -8,6 +8,11 @@ import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUti
 import { MeshBVH } from './three-mesh-bvh.js';
 import { Game } from './main.js';
 
+const textures = [
+    "Spaceship/assets/planet1.jpg",
+    "Spaceship/assets/planet2.jpg"
+];
+
 /**
  * Properties for a single planet.
  * This stores a planet's properties as well as potential
@@ -123,17 +128,15 @@ export class PlanetManager {
      * @param {import('./main').GameScene} scene Scene to fill
      */
     addToScene(scene) {
-        const texture = this.#textureLoader.load("Spaceship/assets/planet1.jpg");
-
         const position = new THREE.Vector3();
         const geoms = [];
         const visuals = [];
         for (const [k, v] of this.#planets) {
             position.copy(v.position);
-            
+
             let mat = new THREE.MeshPhongMaterial({
                 color: v.color,
-                map: texture
+                map: this.#textureLoader.load(textures[Math.abs(v.seed) % textures.length])
             });
             const pgeom = new THREE.SphereGeometry(v.radius, 16, 8);
             
