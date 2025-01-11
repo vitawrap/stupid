@@ -91,9 +91,10 @@ class AppletControl extends THREE.Controls {
 
 /** 
  * Sets the "planet" variable
+ * @param {GameScene} scene Scene containing game objects
  * @param {function(): Number} seededRand Seeded random function (optionally with bound args)
  */
-function initPlanets(seededRand) {
+function initPlanets(scene, seededRand) {
     // spawn some planets as a test, their visuals are separated from the collision
     const position = new THREE.Vector3();
     const geoms = [];
@@ -117,9 +118,9 @@ function initPlanets(seededRand) {
         geoms.push(pgeom);
     }
     const geom = BufferGeometryUtils.mergeGeometries(geoms, true);
-    game.scene.planets = new THREE.Mesh(geom);
-    game.scene.planets.visible = false;
-    game.scene.add(game.scene.planets, ...visuals);
+    scene.planets = new THREE.Mesh(geom);
+    scene.planets.visible = false;
+    scene.add(scene.planets, ...visuals);
 
     geom.boundsTree = new MeshBVH(geom);
 }
@@ -187,7 +188,7 @@ function gameInitialize() {
         }
 
         const seededRandom = seededRandomBuilder(seed);
-        initPlanets(seededRandom);
+        initPlanets(scene, seededRandom);
 
         const amb = new THREE.AmbientLight( 0x404040 );
         const sun = new THREE.DirectionalLight( 0xFFFFFF, 0.8 );
