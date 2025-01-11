@@ -66,8 +66,12 @@ export function spaceshipTick(dt) {
             this.timer -= (dt * 0.5);
             const scl = Math.max(this.timer, 0.01);
             this.visual.scale.copy(new THREE.Vector3(scl, scl, scl));
-            if (this.timer <= 0.0)
+            if (this.timer <= 0.0) {
                 this.state = SHIP_STATE_IDLE;
+                if (isLocal)
+                    game.scene.planets?.enterClosestPlanet(game, this.position);
+                return;
+            }
         break;
     }
 

@@ -10,7 +10,7 @@ import * as Ship from './ship.js';
 
 Math.moveTowards = moveTowards;
 
-/** @typedef {THREE.Scene & {camera: THREE.Camera, object: THREE.Object3D, initialize: function(): void}} GameScene */
+/** @typedef {THREE.Scene & {camera: THREE.Camera, object: THREE.Object3D?, initialize: function(): void}} GameScene */
 
 export class Game {
     /** @type {THREE.WebGLRenderer} */
@@ -27,6 +27,18 @@ export class Game {
 
     /** @type {THREE.LoadingManager} */
     manager;
+
+    /**
+     * Set up a new scene
+     * @param {GameScene} scene Scene instance
+     * @param {THREE.Camera} camera New camera
+     * @param {THREE.Object3D} object Control object
+     */
+    setScene(scene, camera = null, object = null) {
+        scene.camera = camera;
+        scene.object = object;
+        this.scene = scene;
+    }
 }
 
 /** @type {Game} */
@@ -170,7 +182,7 @@ function gameInitialize() {
             localStorage.setItem("seed", seed);
         }
 
-        scene.planets = new PlanetManager();
+        scene.planets = new PlanetManager(game);
         const seededRandom = seededRandomBuilder(seed);
         initPlanets(scene, seededRandom);
 

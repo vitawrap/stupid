@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import { MeshBVH } from './three-mesh-bvh.js';
+import { Game } from './main.js';
 
 /**
  * Properties for a single planet.
@@ -19,7 +20,7 @@ export class Planet {
     /** @type {string} */
     #name;
 
-    /** @type {THREE.Scene?} */
+    /** @type {import('./main.js').GameScene?} */
     #scene;
 
     // MUTABLE:
@@ -57,8 +58,22 @@ export class Planet {
 
     /** Getter to lazy-load scene when needed */
     get scene() {
-        if (this.#scene !== undefined)
-            return this.#scene;
+        if (this.#scene === undefined) {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(70, 1, 0.1, 1000.0);
+
+            const plane = new THREE.Mesh(new THREE.PlaneGeometry(7500, 7500, 255, 255));
+            scene.add(plane);
+            plane.position.set(0, -8, 0);
+            plane.rotateX(Math.PI * -0.5);
+
+            scene.background = new THREE.Color(0x20104b);
+            scene.fog = new THREE.FogExp2(0x20104b, 0.0025);
+
+            this.#scene = scene;
+            this.#scene.camera = camera;
+        }
+        return this.#scene;
     }
 }
 
@@ -74,6 +89,17 @@ export class PlanetManager {
 
     /** @type {THREE.Mesh?} */
     #mesh;
+
+    /** @type {THREE.TextureLoader} */
+    #textureLoader;
+
+    /**
+     * Construct PlanetManager for a game interface.
+     * @param {Game} game Game instance with manager data
+     */
+    constructor(game) {
+        this.#textureLoader = new THREE.TextureLoader(game.manager);
+    }
 
     /**
      * Note: Constructing planets with a manager pushes them automatically.
@@ -97,14 +123,18 @@ export class PlanetManager {
      * @param {import('./main').GameScene} scene Scene to fill
      */
     addToScene(scene) {
+        const texture = this.#textureLoader.load("Spaceship/assets/planet1.jpg");
+
         const position = new THREE.Vector3();
         const geoms = [];
         const visuals = [];
         for (const [k, v] of this.#planets) {
             position.copy(v.position);
             
-            let mat = new THREE.MeshPhongMaterial();
-            mat.color.copy(v.color);
+            let mat = new THREE.MeshPhongMaterial({
+                color: v.color,
+                map: texture
+            });
             const pgeom = new THREE.SphereGeometry(v.radius, 16, 8);
             
             let visual = new THREE.Mesh(pgeom.clone(), mat);
@@ -142,8 +172,8 @@ export class PlanetManager {
      * @returns {Planet} The closest planet if there was any.
      */
     getClosestPlanet(toPoint) {
-        const bestDist = Number.MAX_VALUE;
-        const planet = null;
+        let bestDist = Number.MAX_VALUE;
+        let planet = null;
         for (const [k, v] of this.#planets) {
             const dist = v.position.distanceToSquared(toPoint) - (v.radius*v.radius);
             if (dist < bestDist) {
@@ -162,6 +192,20 @@ export class PlanetManager {
         const planet = this.getClosestPlanet(point);
         if (planet !== null)
             return planet.position.distanceTo(point) < planet.radius;
+        return false;
+    }
+
+    /**
+     * Switch scene to a planet's scene.
+     * @param {Game} game Game whose scene must be changed
+     * @param {THREE.Vector3} point Test point
+     */
+    enterClosestPlanet(game, point) {
+        const planet = this.getClosestPlanet(point);
+        if (planet !== null) {
+            game.setScene(planet.scene, planet.scene.camera);
+            return true;
+        }
         return false;
     }
 }
