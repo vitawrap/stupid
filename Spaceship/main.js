@@ -158,7 +158,7 @@ function gameInitialize() {
             scene.object = object;
             object.tick = Ship.spaceshipTick;
             object.input = Ship.spaceshipInput;
-            Ship.spaceshipInit.bind(object)(game, spVisual, true);
+            Ship.spaceshipInit.bind(object)(game, spVisual);
 
             controls.object = object;
 

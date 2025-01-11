@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { Game } from './main.js';
 
-/** @typedef {THREE.Object3D & {game: Game, state: Number, player: boolean, timer: Number}} Spaceship */
+/** @typedef {THREE.Object3D & {game: Game, state: Number, timer: Number}} Spaceship */
 
 const YAW_PI = new THREE.Euler(0, Math.PI, 0);
 export const SHIP_STATE_IDLE = -1;
@@ -16,6 +16,7 @@ export const SHIP_STATE_ORIENT = 2;
  */
 export function spaceshipTick(dt) {
     let game = this.game;
+    let isLocal = this === game.scene.object;
 
     switch (this.state) {
         case SHIP_STATE_FLY:
@@ -37,7 +38,7 @@ export function spaceshipTick(dt) {
             // Get closest distance to planet
             /** @type {MeshBVH} */ const bvh = game.scene.planets.geometry.boundsTree;
             const target = bvh.closestPointToPoint(this.position);
-            if (target.distance <= 20 && this.player) {
+            if (target.distance <= 20 && isLocal) {
                 const shipPos = this.position.clone();
                 const shipNor = new THREE.Vector3();
                 this.getWorldDirection(shipNor);
@@ -71,7 +72,7 @@ export function spaceshipTick(dt) {
     }
 
     // Player ship: Manipulate the camera as well.
-    if (this.player) {
+    if (isLocal) {
         let camera = game.scene.camera;
 
         let thisQuat = this.quaternion.clone();
@@ -119,9 +120,8 @@ export function spaceshipInput(keycode, down) {
 /**
  * @this {Spaceship} ship object
  */
-export function spaceshipInit(game, visual, isPlayer) {
+export function spaceshipInit(game, visual) {
     this.game = game;                           // Access to game interface
-    this.player = isPlayer;                     // Flag for locally controlled spaceship
     this.velocity = new THREE.Vector3(0, 0, 0); // Angular velocity
     this.steer = new THREE.Vector3(0, 0, 0);    // input strength: for each axis (PYR)
     
