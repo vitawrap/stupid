@@ -109,7 +109,7 @@ function initPlanets(scene, seededRand) {
     // spawn some planets as a test, their visuals are separated from the collision
     for (let i = 0; i < 100; ++i) {
         let planet = new Planet(i.toString(), scene.planets);
-        planet.seed = seededRand() * Math.MAX_SAFE_INTEGER;
+        planet.seed = (seededRand() * Number.MAX_SAFE_INTEGER) | 0;
         planet.color.set(seededRand(), seededRand(), seededRand());
         planet.radius = seededRand() * 200;
         planet.position.set(
