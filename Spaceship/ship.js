@@ -35,7 +35,7 @@ export function spaceshipTick(dt) {
             this.position.add(heading);
 
             // Get closest distance to planet
-            /** @type {MeshBVH} */ const bvh = game.planets.geometry.boundsTree;
+            /** @type {MeshBVH} */ const bvh = game.scene.planets.geometry.boundsTree;
             const target = bvh.closestPointToPoint(this.position);
             if (target.distance <= 20 && this.player) {
                 const shipPos = this.position.clone();
@@ -72,7 +72,7 @@ export function spaceshipTick(dt) {
 
     // Player ship: Manipulate the camera as well.
     if (this.player) {
-        let camera = game.camera;
+        let camera = game.scene.camera;
 
         let thisQuat = this.quaternion.clone();
         let relQuat = new THREE.Quaternion();

@@ -11,6 +11,8 @@ import * as Ship from './ship.js';
 
 Math.moveTowards = moveTowards;
 
+/** @typedef {THREE.Scene & {camera: THREE.Camera, object: THREE.Object3D, initialize: function(): void}} GameScene */
+
 export class Game {
     /** @type {THREE.WebGLRenderer} */
     renderer;
@@ -21,22 +23,11 @@ export class Game {
     /** @type {GUI} */
     gui;
 
-    /** @type {THREE.Scene} */
+    /** @type {GameScene} */
     scene;
-
-    /** @type {THREE.Camera} */
-    camera;
-
-    /** @type {Ship.Spaceship} */
-    object;
 
     /** @type {THREE.LoadingManager} */
     manager;
-
-    /** @type {THREE.Mesh} 
-     * Collision mesh for planets
-     */
-    planets;
 }
 
 /** @type {Game} */
@@ -63,7 +54,7 @@ class AppletControl extends THREE.Controls {
         if (this.enabled === false) return;
 
         const object = this.object;
-        if ('input' in object)
+        if (object !== undefined && 'input' in object)
             object.input(event.code, true);
     }
 
@@ -75,7 +66,7 @@ class AppletControl extends THREE.Controls {
         if (this.enabled === false) return;
 
         const object = this.object;
-        if ('input' in object)
+        if (object !== undefined && 'input' in object)
             object.input(event.code, false);
     }
 
@@ -122,9 +113,9 @@ function initPlanets(seededRand) {
         visuals.push(visual);
     }
     const geom = BufferGeometryUtils.mergeGeometries(geoms, true);
-    game.planets = new THREE.Mesh(geom);
-    game.planets.visible = false;
-    game.scene.add(game.planets, ...visuals);
+    game.scene.planets = new THREE.Mesh(geom);
+    game.scene.planets.visible = false;
+    game.scene.add(game.scene.planets, ...visuals);
 
     geom.boundsTree = new MeshBVH(geom);
 }
@@ -136,8 +127,6 @@ function gameInitialize() {
     let gui = new GUI("canvas-display");
     let controls = new AppletControl();
     let manager = new THREE.LoadingManager();
-    let camera = new THREE.PerspectiveCamera(75, 1, 0.1, 8000);
-    let scene = new THREE.Scene();
 
     let renderer = new THREE.WebGLRenderer({ 
         canvas: document.getElementById("3js-viewer"),
@@ -145,61 +134,70 @@ function gameInitialize() {
     });
     renderer.setSize(800, 600);
     renderer.domElement.className = "main-canvas";
-    renderer.setAnimationLoop(gameAnimate);
 
-    game.camera = camera;
     game.controls = controls;
     game.renderer = renderer;
     game.manager = manager;
-    game.scene = scene;
     game.gui = gui;
+
+    /** @type {GameScene} */
+    let scene = new THREE.Scene();
+    scene.initialize = function() {
+        let camera = new THREE.PerspectiveCamera(75, 1, 0.1, 8000);
+        scene.camera = camera;
+        
+        const loader = new PLYLoader(manager);
+        loader.load("Spaceship/assets/ship.ply", (buf) => {
+            const material = new THREE.MeshPhongMaterial();
+            const spVisual = new THREE.Mesh(buf, material);
+            let object = new THREE.Object3D();
+            object.add(spVisual);
+            scene.add(object);
+            object.position.z = -4;
+            
+            scene.object = object;
+            object.tick = Ship.spaceshipTick;
+            object.input = Ship.spaceshipInput;
+            Ship.spaceshipInit.bind(object)(game, spVisual, true);
+
+            controls.object = object;
+
+            gui.addEventListener("orbitaccept", (e) => {
+                gui.hideOrbitPrompt(true);
+                if (scene.object.state == Ship.SHIP_STATE_IDLE)
+                    scene.object.state = Ship.SHIP_STATE_ORBIT;
+            });
+        
+            gui.addEventListener("orbitdeny", (e) => {
+                gui.hideOrbitPrompt(true);
+                if (scene.object.state == Ship.SHIP_STATE_IDLE)
+                    scene.object.state = Ship.SHIP_STATE_ORIENT;
+            });
+        });
+
+        // Get or initialize seed in local storage
+        let seed = localStorage.getItem("seed");
+        if (seed === null) {
+            seed = Math.random() * Number.MAX_SAFE_INTEGER;
+            localStorage.setItem("seed", seed);
+        }
+
+        const seededRandom = seededRandomBuilder(seed);
+        initPlanets(seededRandom);
+
+        const amb = new THREE.AmbientLight( 0x404040 );
+        const sun = new THREE.DirectionalLight( 0xFFFFFF, 0.8 );
+        scene.add( amb, sun );
+    }
+
+    game.scene = scene;
+    scene.initialize();
 
     controls.domElement = renderer.domElement;
     controls.connect();
     gui.connect();
 
-    const loader = new PLYLoader(manager);
-    loader.load("Spaceship/assets/ship.ply", (buf) => {
-        const material = new THREE.MeshPhongMaterial();
-        const spVisual = new THREE.Mesh(buf, material);
-        let object = new THREE.Object3D();
-        object.add(spVisual);
-        scene.add(object);
-        object.position.z = -4;
-        
-        game.object = object;
-        object.tick = Ship.spaceshipTick;
-        object.input = Ship.spaceshipInput;
-        Ship.spaceshipInit.bind(object)(game, spVisual, true);
-
-        controls.object = object;
-
-        gui.addEventListener("orbitaccept", (e) => {
-            gui.hideOrbitPrompt(true);
-            if (game.object.state == Ship.SHIP_STATE_IDLE)
-                game.object.state = Ship.SHIP_STATE_ORBIT;
-        });
-    
-        gui.addEventListener("orbitdeny", (e) => {
-            gui.hideOrbitPrompt(true);
-            if (game.object.state == Ship.SHIP_STATE_IDLE)
-                game.object.state = Ship.SHIP_STATE_ORIENT;
-        });
-    });
-
-    // Get or initialize seed in local storage
-    let seed = localStorage.getItem("seed");
-    if (seed === null) {
-        seed = Math.random() * Number.MAX_SAFE_INTEGER;
-        localStorage.setItem("seed", seed);
-    }
-
-    const seededRandom = seededRandomBuilder(seed);
-    initPlanets(seededRandom);
-
-    const amb = new THREE.AmbientLight( 0x404040 );
-    const sun = new THREE.DirectionalLight( 0xFFFFFF, 0.8 );
-    scene.add( amb, sun );
+    renderer.setAnimationLoop(gameAnimate);
 }
 
 let lastNow = performance.timeOrigin;
@@ -215,7 +213,7 @@ function gameAnimate() {
             object.tick(dt);
     });
 
-    game.renderer.render(game.scene, game.camera);
+    game.renderer.render(game.scene, game.scene.camera);
     lastNow = now;
 }
 
