@@ -78,13 +78,24 @@ export class PlanetManager {
         const bestDist = Number.MAX_VALUE;
         const planet = null;
         for (const [k, v] of this.#planets) {
-            const dist = v.position.distanceToSquared(toPoint);
+            const dist = v.position.distanceToSquared(toPoint) - (v.radius*v.radius);
             if (dist < bestDist) {
                 bestDist = dist;
                 planet = v;
             }
         }
         return planet;
+    }
+
+    /**
+     * Check if point is in a planet
+     * @param {Vector3} point Test point
+     */
+    isInsidePlanet(point) {
+        const planet = this.getClosestPlanet(point);
+        if (planet !== null)
+            return planet.position.distanceTo(point) < planet.radius;
+        return false;
     }
 }
 
