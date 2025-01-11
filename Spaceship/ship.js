@@ -55,7 +55,7 @@ export function spaceshipTick(dt) {
             const vec = this.orbitNormal.clone();
             vec.lerp(this.shipNormal, this.timer);
             vec.add(this.position);
-            game.object.lookAt(vec);
+            this.lookAt(vec);
             if (this.timer <= 0.0)
                 this.state = SHIP_STATE_FLY;
         break;
