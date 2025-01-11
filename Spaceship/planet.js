@@ -10,7 +10,8 @@ import { Game } from './main.js';
 
 const textures = [
     "Spaceship/assets/planet1.jpg",
-    "Spaceship/assets/planet2.jpg"
+    "Spaceship/assets/planet2.jpg",
+    "Spaceship/assets/planet1.jpg"
 ];
 
 /**
