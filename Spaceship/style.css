@@ -65,20 +65,20 @@ footer {
     height: 128px;
 }
 
-#gui-bar span {
+#gui-bar>span {
     display: inline-block;
     width: 16px;
     height: 100%;
 
-    border: 3px gray groove;
+    outline: 3px gray groove;
+    background-color: black;
 }
 
-#gui-bar-energy {
-    background-color: blue;
-}
-
-#gui-bar-health {
-    background-color: red;
+#gui-bar>span>span {
+    position: absolute;
+    outline: none;
+    bottom: 0%;
+    width: inherit;
 }
 
 #gui-coins-count {
