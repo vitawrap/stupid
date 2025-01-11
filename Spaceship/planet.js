@@ -3,7 +3,9 @@
  * Planet aspect and properties generator
  */
 
-import { Vector3 } from 'three';
+import * as THREE from 'three';
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js'
+import { MeshBVH } from './three-mesh-bvh.js';
 
 /**
  * Properties for a single planet.
@@ -17,13 +19,22 @@ export class Planet {
     /** @type {string} */
     #name;
 
+    /** @type {THREE.Scene?} */
+    #scene;
+
     // MUTABLE:
+
+    /** @type {number} */
+    seed;
 
     /** @type {number} */
     radius;
 
-    /** @type {Vector3} */
-    position;
+    /** @type {THREE.Color} */
+    color = new THREE.Color();
+
+    /** @type {THREE.Vector3} */
+    position = new THREE.Vector3();
 
     /**
      * Construct a planet, for use with a manager.
@@ -43,6 +54,12 @@ export class Planet {
     dispose() {
         this.#manager.remove(this);
     }
+
+    /** Getter to lazy-load scene when needed */
+    get scene() {
+        if (this.#scene !== undefined)
+            return this.#scene;
+    }
 }
 
 /**
@@ -51,6 +68,12 @@ export class Planet {
 export class PlanetManager {
     /** @type {Map<string, Planet>} */
     #planets = new Map();
+
+    /** @type {(THREE.BufferGeometry & {boundsTree: MeshBVH})?} */
+    #geometry;
+
+    /** @type {THREE.Mesh?} */
+    #mesh;
 
     /**
      * Note: Constructing planets with a manager pushes them automatically.
@@ -70,8 +93,52 @@ export class PlanetManager {
     }
 
     /**
+     * Add all planets to scene, with collision.
+     * @param {import('./main').GameScene} scene Scene to fill
+     */
+    addToScene(scene) {
+        const position = new THREE.Vector3();
+        const geoms = [];
+        const visuals = [];
+        for (const [k, v] of this.#planets) {
+            position.copy(v.position);
+            
+            let mat = new THREE.MeshPhongMaterial();
+            mat.color.copy(v.color);
+            const pgeom = new THREE.SphereGeometry(v.radius, 16, 8);
+            
+            let visual = new THREE.Mesh(pgeom.clone(), mat);
+            visual.position.copy(position);
+            visual.tick = function(dt) { this.rotateZ(dt * 0.01); };
+            visuals.push(visual);
+    
+            pgeom.translate(position);
+            geoms.push(pgeom);
+        }
+        this.#geometry = BufferGeometryUtils.mergeGeometries(geoms, true);
+        this.#mesh = new THREE.Mesh(this.#geometry);
+        this.#mesh.visible = false;
+        scene.add(this.#mesh, ...visuals);
+        this.#geometry.boundsTree = new MeshBVH(this.#geometry);
+    }
+
+    /**
+     * Get the geometry BVH if it has been created
+     */
+    get bvh() {
+        return this.#geometry?.boundsTree;
+    }
+
+    /**
+     * Get the BVH mesh object if it has been created
+     */
+    get mesh() {
+        return this.#mesh;
+    }
+
+    /**
      * Find the closest registered planet to a point.
-     * @param {Vector3} toPoint Point to use as reference
+     * @param {THREE.Vector3} toPoint Point to use as reference
      * @returns {Planet} The closest planet if there was any.
      */
     getClosestPlanet(toPoint) {
@@ -89,7 +156,7 @@ export class PlanetManager {
 
     /**
      * Check if point is in a planet
-     * @param {Vector3} point Test point
+     * @param {THREE.Vector3} point Test point
      */
     isInsidePlanet(point) {
         const planet = this.getClosestPlanet(point);

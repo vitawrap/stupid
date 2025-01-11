@@ -36,7 +36,7 @@ export function spaceshipTick(dt) {
             this.position.add(heading);
 
             // Get closest distance to planet
-            /** @type {MeshBVH} */ const bvh = game.scene.planets.geometry.boundsTree;
+            /** @type {MeshBVH} */ const bvh = game.scene.planets.bvh;
             const target = bvh.closestPointToPoint(this.position);
             if (target.distance <= 20 && isLocal) {
                 const shipPos = this.position.clone();

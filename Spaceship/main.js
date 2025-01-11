@@ -2,11 +2,10 @@
 
 import * as THREE from 'three';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
-import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js'
-import { MeshBVH } from './three-mesh-bvh.js';
 
 import { GUI } from './gui.js';
 import { moveTowards, seededRandomBuilder } from './util.js';
+import { Planet, PlanetManager } from './planet.js';
 import * as Ship from './ship.js';
 
 Math.moveTowards = moveTowards;
@@ -96,33 +95,17 @@ class AppletControl extends THREE.Controls {
  */
 function initPlanets(scene, seededRand) {
     // spawn some planets as a test, their visuals are separated from the collision
-    const position = new THREE.Vector3();
-    const geoms = [];
-    const visuals = [];
     for (let i = 0; i < 100; ++i) {
-        position.set(
+        let planet = new Planet(i.toString(), scene.planets);
+        planet.seed = seededRand() * Math.MAX_SAFE_INTEGER;
+        planet.color.set(seededRand(), seededRand(), seededRand());
+        planet.radius = seededRand() * 200;
+        planet.position.set(
             (seededRand() * 8000) - 4000,
             (seededRand() * 8000) - 4000,
             (seededRand() * 8000) - 4000);
-        
-        let mat = new THREE.MeshPhongMaterial();
-        mat.color.set(seededRand(), seededRand(), seededRand());
-        const pgeom = new THREE.SphereGeometry(seededRand() * 200, 16, 8);
-        
-        let visual = new THREE.Mesh(pgeom.clone(), mat);
-        visual.position.copy(position);
-        visual.tick = function(dt) { this.rotateZ(dt * 0.01); };
-        visuals.push(visual);
-
-        pgeom.translate(position);
-        geoms.push(pgeom);
     }
-    const geom = BufferGeometryUtils.mergeGeometries(geoms, true);
-    scene.planets = new THREE.Mesh(geom);
-    scene.planets.visible = false;
-    scene.add(scene.planets, ...visuals);
-
-    geom.boundsTree = new MeshBVH(geom);
+    scene.planets.addToScene(scene);
 }
 
 /* Application code */
@@ -187,6 +170,7 @@ function gameInitialize() {
             localStorage.setItem("seed", seed);
         }
 
+        scene.planets = new PlanetManager();
         const seededRandom = seededRandomBuilder(seed);
         initPlanets(scene, seededRandom);
 
