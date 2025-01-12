@@ -122,7 +122,13 @@ function initPlanets(scene, seededRand) {
 
 /* Application code */
 
-function gameInitialize() {
+/**
+ * Fired from HTML
+ */
+function gameInitialize(img) {
+    if (img instanceof HTMLElement)
+        img.remove();
+
     game = new Game();
     let gui = new GUI("canvas-display");
     let controls = new AppletControl();
@@ -154,7 +160,6 @@ function gameInitialize() {
         }
 
         scene.planets = new PlanetManager(game);
-        console.log(scene.planets);
         const seededRandom = seededRandomBuilder(seed);
         initPlanets(scene, seededRandom);
         
@@ -223,5 +228,5 @@ function gameAnimate() {
     lastNow = now;
 }
 
-// TODO: Play button initializes the app
-gameInitialize();
+// Give access to HTML scripts
+globalThis.gameInitialize = gameInitialize;

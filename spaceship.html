@@ -16,7 +16,7 @@
 </head>
 <body>
     <div id="display">
-      <div id="canvas-display" style="position: relative;">
+      <div id="canvas-display" style="position: relative;" hidden>
         <canvas id="3js-viewer"></canvas>
         <div id="gui-enterorbit" hidden>
           <button id="gui-enterorbit-accept">Enter planet orbit</button>
@@ -35,6 +35,7 @@
           <img src="Spaceship/assets/coins.png">
         </div>
       </div>
+      <img src="/Spaceship/style/play_button.jpg" style="cursor: pointer;" onclick="gameInitialize(this);">
       <div>
         <a href="."><img src="Spaceship/style/back.gif"></a>
       </div>

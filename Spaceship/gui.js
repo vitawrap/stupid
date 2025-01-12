@@ -36,6 +36,8 @@ export class GUI extends EventTarget {
     constructor(element) {
         super();
         this.domRoot = document.getElementById(element);
+        this.domRoot.hidden = false;
+
         this.orbitRoot = document.getElementById("gui-enterorbit");
         this.orbitAccept = document.getElementById("gui-enterorbit-accept");
         this.orbitDeny = document.getElementById("gui-enterorbit-deny");
