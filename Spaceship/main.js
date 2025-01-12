@@ -145,6 +145,18 @@ function gameInitialize() {
     scene.initialize = function() {
         let camera = new THREE.PerspectiveCamera(75, 1, 0.1, 8000);
         scene.camera = camera;
+
+        // Get or initialize seed in local storage
+        let seed = localStorage.getItem("seed");
+        if (seed === null) {
+            seed = Math.random() * Number.MAX_SAFE_INTEGER;
+            localStorage.setItem("seed", seed);
+        }
+
+        scene.planets = new PlanetManager(game);
+        console.log(scene.planets);
+        const seededRandom = seededRandomBuilder(seed);
+        initPlanets(scene, seededRandom);
         
         const loader = new PLYLoader(manager);
         loader.load("Spaceship/assets/ship.ply", (buf) => {
@@ -174,17 +186,6 @@ function gameInitialize() {
                     scene.object.state = Ship.SHIP_STATE_ORIENT;
             });
         });
-
-        // Get or initialize seed in local storage
-        let seed = localStorage.getItem("seed");
-        if (seed === null) {
-            seed = Math.random() * Number.MAX_SAFE_INTEGER;
-            localStorage.setItem("seed", seed);
-        }
-
-        scene.planets = new PlanetManager(game);
-        const seededRandom = seededRandomBuilder(seed);
-        initPlanets(scene, seededRandom);
 
         const amb = new THREE.AmbientLight( 0x404040 );
         const sun = new THREE.DirectionalLight( 0xFFFFFF, 0.8 );
