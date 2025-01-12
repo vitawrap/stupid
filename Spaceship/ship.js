@@ -10,6 +10,8 @@ export const SHIP_STATE_FLY = 0;
 export const SHIP_STATE_ORBIT = 1;
 export const SHIP_STATE_ORIENT = 2;
 
+export const SHIP_STAT_MAX = 100;
+
 /**
  * @param {Number} dt fraction of a second
  * @this {Spaceship} ship object
@@ -92,6 +94,10 @@ export function spaceshipTick(dt) {
             -4 - this.linVel);
         camPos = this.localToWorld(camPos);
         camera.position.copy(camPos);
+
+        // GUI update
+        game.gui.setEnergyBar(this.energy / SHIP_STAT_MAX);
+        game.gui.setHealthBar(this.health / SHIP_STAT_MAX);
     }
 }
 
@@ -133,6 +139,9 @@ export function spaceshipInit(game, visual) {
     this.move = 0.0;                            // input strength: forward
     this.state = SHIP_STATE_FLY;                // Ship state
     this.timer = 0.0;                           // State timer
+
+    this.energy = SHIP_STAT_MAX;                // Ship energy (nitro)
+    this.health = SHIP_STAT_MAX;                // Ship integrity
 
     // Child mesh object
     if (visual instanceof THREE.Mesh) {

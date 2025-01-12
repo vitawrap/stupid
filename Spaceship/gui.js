@@ -23,6 +23,12 @@ export class GUI extends EventTarget {
     /** @type {HTMLElement} */
     coinsCount;
 
+    /** @type {HTMLElement} */
+    barHealth;
+
+    /** @type {HTMLElement} */
+    barEnergy;
+
     /**
      * TODO: Better GUI system than hardcoded gui elements.
      * @param {string} element ID of root dom element
@@ -38,6 +44,9 @@ export class GUI extends EventTarget {
 
         this.coinsCount = document.getElementById("gui-coins-count");
         this.refreshCoins();
+
+        this.barHealth = document.getElementById("gui-bar-health").children.item(0);
+        this.barEnergy = document.getElementById("gui-bar-energy").children.item(0);
 
         this.orbitAcceptFn =
             (() => { this.dispatchEvent(new Event("orbitaccept")); }).bind(this);
@@ -59,6 +68,30 @@ export class GUI extends EventTarget {
     disconnect() {
         this.orbitAccept.removeEventListener("click", this.orbitAcceptFn);
         this.orbitDeny.removeEventListener("click", this.orbitDenyFn);
+    }
+
+    /**
+     * Update a stat bar in the UI
+     * @param {HTMLElement} barObject HTML Bar element with a height attribute
+     */
+    #updateBar(barObject, ratio) {
+        barObject.style.height = (ratio * 100).toString() + "%";
+    }
+
+    /**
+     * Update health bar on the GUI
+     * @param {number} ratio Ratio between 0 and 1.
+     */
+    setHealthBar(ratio) {
+        this.#updateBar(this.barHealth, ratio);
+    }
+    
+    /**
+     * Update energy bar on the GUI
+     * @param {number} ratio Ratio between 0 and 1.
+     */
+    setEnergyBar(ratio) {
+        this.#updateBar(this.barEnergy, ratio);
     }
 
     /**
