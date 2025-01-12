@@ -162,6 +162,14 @@ function gameInitialize(img) {
         scene.planets = new PlanetManager(game);
         const seededRandom = seededRandomBuilder(seed);
         initPlanets(scene, seededRandom);
+
+        // load space skybox for scene
+        const skyLoader = new THREE.CubeTextureLoader();
+        skyLoader.setPath("Spaceship/assets/");
+        const textureCube = skyLoader.load([
+            'px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg'
+        ]);
+        scene.background = textureCube;
         
         const loader = new PLYLoader(manager);
         loader.load("Spaceship/assets/ship.ply", (buf) => {
