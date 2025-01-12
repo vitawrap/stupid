@@ -30,8 +30,17 @@ export function spaceshipTick(dt) {
             this.rotateY(this.velocity.y * dt);
             this.rotateX(this.velocity.x * dt);
 
+            // Deplete nitro first, before attempting to apply it
+            if (this.linVel > 0.0) {
+                this.energy -= this.linVel * this.energyDepleteFactor * dt;
+                this.energy = Math.max(this.energy, 0.0);
+            } else {
+                this.energy += this.energyRegenFactor * dt;
+                this.energy = Math.min(this.energy, SHIP_STAT_MAX);
+            }
+            
             // Displace
-            this.linVel = Math.moveTowards(this.linVel, this.move, dt);
+            this.linVel = Math.moveTowards(this.linVel, this.energy < 0.01? 0.0 : this.move, dt);
             const heading = new THREE.Vector3();
             this.getWorldDirection(heading);
             heading.multiplyScalar(30 * (1 + this.linVel) * dt);
@@ -142,6 +151,10 @@ export function spaceshipInit(game, visual) {
 
     this.energy = SHIP_STAT_MAX;                // Ship energy (nitro)
     this.health = SHIP_STAT_MAX;                // Ship integrity
+
+    // Upgrade stats
+    this.energyDepleteFactor = 4.0;             // Speed of nitro consumption
+    this.energyRegenFactor = 1.0;               // Speed of nitro regeneration
 
     // Child mesh object
     if (visual instanceof THREE.Mesh) {
