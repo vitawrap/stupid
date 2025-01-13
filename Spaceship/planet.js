@@ -68,8 +68,9 @@ export class Planet {
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(70, 1, 0.1, 1000.0);
 
-            scene.background = new THREE.Color(0x20104b);
-            scene.fog = new THREE.FogExp2(0x20104b, 0.0025);
+            const sky = new THREE.Color(~this.color.getHex() & 0xFFFFFF).addScalar(0.3);
+            scene.fog = new THREE.FogExp2(sky, 0.0025);
+            scene.background = sky
 
             const tex = this.#manager.textureLoader.load(this.textureName);
             tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
