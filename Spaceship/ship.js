@@ -18,7 +18,8 @@ export const SHIP_STAT_MAX = 100;
  */
 export function spaceshipTick(dt) {
     let game = this.game;
-    let isLocal = this === game.scene.object;
+    let scene = game.scene;
+    let isLocal = this === scene.object;
 
     switch (this.state) {
         case SHIP_STATE_FLY:
@@ -47,7 +48,7 @@ export function spaceshipTick(dt) {
             this.position.add(heading);
 
             // Get closest distance to planet
-            /** @type {MeshBVH} */ const bvh = game.scene.planets.bvh;
+            /** @type {MeshBVH} */ const bvh = scene.planets.bvh;
             const target = bvh.closestPointToPoint(this.position);
             if (target.distance <= 20 && isLocal) {
                 const shipPos = this.position.clone();
@@ -80,7 +81,7 @@ export function spaceshipTick(dt) {
             if (this.timer <= 0.0) {
                 this.state = SHIP_STATE_IDLE;
                 if (isLocal)
-                    game.scene.planets?.enterClosestPlanet(game, this.position);
+                    scene.planets?.enterClosestPlanet(game, this.position);
                 return;
             }
         break;
@@ -88,7 +89,7 @@ export function spaceshipTick(dt) {
 
     // Player ship: Manipulate the camera as well.
     if (isLocal) {
-        let camera = game.scene.camera;
+        let camera = scene.camera;
 
         let thisQuat = this.quaternion.clone();
         let relQuat = new THREE.Quaternion();
