@@ -48,8 +48,8 @@ globalThis.game = null;
 
 class AppletControl extends THREE.Controls {
 
-    constructor( object, domElement = null ) {
-        super(object, domElement);
+    constructor( domElement = null ) {
+        super(null, domElement);
         this._onKeyDown = this.onKeyDown.bind(this);
         this._onKeyUp = this.onKeyUp.bind(this);
 
@@ -64,7 +64,7 @@ class AppletControl extends THREE.Controls {
     onKeyDown(event) {
         if (this.enabled === false) return;
 
-        const object = this.object;
+        const object = game.scene?.object;
         if (object !== undefined && 'input' in object)
             object.input(event.code, true);
     }
@@ -76,7 +76,7 @@ class AppletControl extends THREE.Controls {
     onKeyUp(event) {
         if (this.enabled === false) return;
 
-        const object = this.object;
+        const object = game.scene?.object;
         if (object !== undefined && 'input' in object)
             object.input(event.code, false);
     }
@@ -184,8 +184,6 @@ function gameInitialize(img) {
             object.tick = Ship.spaceshipTick;
             object.input = Ship.spaceshipInput;
             Ship.spaceshipInit.bind(object)(game, spVisual);
-
-            controls.object = object;
 
             gui.addEventListener("orbitaccept", (e) => {
                 gui.hideOrbitPrompt(true);
