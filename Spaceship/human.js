@@ -86,7 +86,6 @@ export class Human extends THREE.Object3D {
      * @param {boolean} down true: down, false: up
      */
     input(keycode, down) {
-        console.log(keycode);
         switch (keycode) {
             // Walk
             case 'KeyW': this.move.y = down * 1.0;  break;

@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import { MeshBVH } from './three-mesh-bvh.js';
 import { Game } from './main.js';
+import { Human } from './human.js';
 
 const textures = [
     "Spaceship/assets/planet1.jpg",
@@ -87,6 +88,11 @@ export class Planet {
             scene.add(amb, sun, plane);
             this.#scene = scene;
             this.#scene.camera = camera;
+
+            // add player
+            const human = new Human();
+            scene.add(human);
+            scene.object = human;
         }
         return this.#scene;
     }
@@ -228,7 +234,8 @@ export class PlanetManager {
     enterClosestPlanet(game, point) {
         const planet = this.getClosestPlanet(point);
         if (planet !== null) {
-            game.setScene(planet.scene, planet.scene.camera);
+            const scene = planet.scene;
+            game.setScene(scene, scene.camera, scene.object);
             return true;
         }
         return false;
