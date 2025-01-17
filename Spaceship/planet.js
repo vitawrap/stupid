@@ -75,19 +75,51 @@ export class Planet {
 
             const tex = this.#manager.textureLoader.load(this.textureName);
             tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-            tex.repeat.set(16, 16);
+            tex.repeat.set(128, 128);
             const mat = new THREE.MeshPhongMaterial({ color: this.color, map: tex })
 
-            const plane = new THREE.Mesh(new THREE.PlaneGeometry(7500, 7500, 255, 255), mat);
-            plane.position.set(0, -8, 0);
-            plane.rotateX(Math.PI * -0.5);
+            const planeGeom = new THREE.PlaneGeometry(7500, 7500, 255, 255);
+            const vertices = planeGeom.attributes.position.array;
+
+            for ( let j = 0; j < vertices.length; j += 3 ) {
+                vertices[ j + 2 ] = (Math.random() * -10) - 4.0;
+            }
+            planeGeom.rotateX(Math.PI * -0.5);
+            planeGeom.computeVertexNormals();
+
+            const plane = new THREE.Mesh(planeGeom, mat);
+            plane.position.set(0, -1, 0);
+            plane.name = "TERRAIN";
             
             const amb = new THREE.AmbientLight( 0x404040 );
             const sun = new THREE.DirectionalLight( 0xFFFFFF, 0.8 );
+            sun.position.set(0.3, 0.5, 0.0).normalize()
             
             scene.add(amb, sun, plane);
             this.#scene = scene;
             this.#scene.camera = camera;
+
+            const boxGeom = new THREE.SphereGeometry(2);
+            const boxMat = new THREE.MeshPhongMaterial({ color: 0xDDDDDD });
+            const caster = new THREE.Raycaster();
+            caster.far = 200.0;
+            const vec = new THREE.Vector3();
+            const down = new THREE.Vector3(0, -1, 0);
+            for (let i = 0; i < 100; ++i) {
+                const box = new THREE.Mesh(boxGeom, boxMat);
+                vec.set(
+                    (Math.random() * 400.0) - 200.0,
+                    50.0,
+                    (Math.random() * 400.0) - 200.0);
+
+                caster.set(vec, down);
+                /** @type {THREE.Intersection[]} */
+                const inters = caster.intersectObject(plane, false);
+                if (inters.length)
+                    vec.copy(inters[0].point);
+                box.position.copy(vec);
+                scene.add(box);
+            }
 
             // add player
             const human = new Human();
