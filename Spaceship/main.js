@@ -97,6 +97,16 @@ class AppletControl extends THREE.Controls {
 
     update(delta) {
         if (this.enabled === false) return;
+
+        const object = game.scene?.object;
+        if (object !== undefined && 'status' in object) {
+            const status = object.status() || {};
+            game.gui.setEnergyBar(status['energy'] || 0.0);
+            game.gui.setHealthBar(status['health'] || 0.0);
+        } else {
+            game.gui.setEnergyBar(0.0);
+            game.gui.setHealthBar(0.0);
+        }
     }
 }
 
@@ -183,6 +193,7 @@ function gameInitialize(img) {
             scene.object = object;
             object.tick = Ship.spaceshipTick;
             object.input = Ship.spaceshipInput;
+            object.status = Ship.spaceshipStatus;
             Ship.spaceshipInit.bind(object)(game, spVisual);
 
             gui.addEventListener("orbitaccept", (e) => {

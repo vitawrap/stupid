@@ -104,10 +104,6 @@ export function spaceshipTick(dt) {
             -4 - this.linVel);
         camPos = this.localToWorld(camPos);
         camera.position.copy(camPos);
-
-        // GUI update
-        game.gui.setEnergyBar(this.energy / SHIP_STAT_MAX);
-        game.gui.setHealthBar(this.health / SHIP_STAT_MAX);
     }
 }
 
@@ -134,6 +130,16 @@ export function spaceshipInput(keycode, down) {
         // Roll
         case 'KeyE': this.steer.z = down * 2.0;  break;
         case 'KeyQ': this.steer.z = down * -2.0; break;
+    }
+}
+
+/**
+ * @this {Spaceship} ship object
+ */
+export function spaceshipStatus() {
+    return {
+        energy: this.energy / SHIP_STAT_MAX,
+        health: this.health / SHIP_STAT_MAX
     }
 }
 
