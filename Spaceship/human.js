@@ -9,6 +9,7 @@ import { Game } from './main.js';
 import { moveTowards } from './util.js';
 
 const VECTOR_UP = new THREE.Vector3(0, 1, 0);
+const WALK_SPEED = 32.0
 
 const forward = new THREE.Vector3();
 const right = new THREE.Vector3();
@@ -59,10 +60,11 @@ export class Human extends THREE.Object3D {
         this.setRotationFromAxisAngle(VECTOR_UP, this.angle);
 
         // Add forward and right vectors from move
+        const walkSpeed = -WALK_SPEED * dt;
         this.getWorldDirection(forward);
         right.crossVectors(forward, VECTOR_UP);
-        forward.multiplyScalar(this.move.x * dt);
-        right.multiplyScalar(this.move.y * dt);
+        forward.multiplyScalar(this.move.y * walkSpeed);
+        right.multiplyScalar(this.move.x * walkSpeed);
 
         this.position.add(right);
         this.position.add(forward);
