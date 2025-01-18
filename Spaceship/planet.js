@@ -9,6 +9,8 @@ import { MeshBVH } from './three-mesh-bvh.js';
 import { Game } from './main.js';
 import { Human } from './human.js';
 import { makeTerrain } from './world.js';
+import { SimplexNoise } from 'three/examples/jsm/math/SimplexNoise.js';
+import { seededRandomBuilder } from './util.js';
 
 const textures = [
     "Spaceship/assets/planet1.jpg",
@@ -77,9 +79,16 @@ export class Planet {
             const tex = this.#manager.textureLoader.load(this.textureName);
             tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
             tex.repeat.set(128, 128);
-            const mat = new THREE.MeshLambertMaterial({ color: this.color, map: tex })
+            const mat = new THREE.MeshLambertMaterial({ color: this.color, map: tex });
 
-            const plane = makeTerrain(2048, 10.0, [], mat);
+            const r = { random: seededRandomBuilder(~this.seed) };
+            const meadows = new SimplexNoise(r);
+            meadows.size = 0.005;
+            const hills = new SimplexNoise(r);
+            hills.size = 0.01;
+            const peaks = new SimplexNoise(r);
+            peaks.size = 0.03;
+            const plane = makeTerrain(2048, 10.0, [meadows, hills, peaks], mat);
             
             const amb = new THREE.AmbientLight( 0x404040 );
             const sun = new THREE.DirectionalLight( 0xFFFFFF, 0.8 );

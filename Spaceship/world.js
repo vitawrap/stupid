@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { ImprovedNoise } from 'three/examples/jsm/math/ImprovedNoise.js';
 import { SimplexNoise } from 'three/examples/jsm/math/SimplexNoise.js';
 
-/** @typedef {ImprovedNoise | SimplexNoise} Noise */
+/** @typedef {(ImprovedNoise | SimplexNoise) & {size: number}} Noise */
 
 /**
  * Create a terrain plane with a custom noise and material.
@@ -20,8 +20,10 @@ export function makeTerrain(size, height, noise, material) {
 
     for ( let j = 0; j < vertices.length; j += 3 ) {
         let y = 0.0;
-        for (let noise of noises)
-            y += noise.noise(vertices[ j ], vertices[ j + 1 ], 0.0);
+        for (let noise of noises) {
+            const invSize = noise.size || 1.0;
+            y += noise.noise(vertices[ j ] * invSize, vertices[ j + 1 ] * invSize, 0.0);
+        }
 
         vertices[ j + 2 ] = y * height;
     }
