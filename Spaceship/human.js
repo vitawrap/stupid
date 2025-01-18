@@ -5,6 +5,7 @@
  */
 
 import * as THREE from 'three';
+import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 import { Game } from './main.js';
 import { moveTowards } from './util.js';
 
@@ -33,6 +34,9 @@ export class Human extends THREE.Object3D {
 
     /** @type {THREE.Vector2} */
     move = new THREE.Vector2(0, 0);
+
+    /** @type {Capsule} */
+    capsule = new Capsule(new THREE.Vector3(0, 0.5, 0), new THREE.Vector3(0, 1.5, 0), 0.5);
 
     /**
      * Construct human with game interface
@@ -68,6 +72,7 @@ export class Human extends THREE.Object3D {
 
         this.position.add(right);
         this.position.add(forward);
+        this.updateCapsule();
 
         // TODO: Intersect and apply counter-forces from BVH.
 
@@ -81,6 +86,22 @@ export class Human extends THREE.Object3D {
             camera.quaternion.copy(this.quaternion);
             camera.position.copy(eye);
         }
+    }
+
+    /**
+     * Update capsule from object position
+     */
+    updateCapsule() {
+        const pos = this.position;
+        this.capsule.start.set(pos.x, pos.y + this.capsule.radius, pos.z);
+        this.capsule.end.set(pos.x, pos.y + 1.0, pos.z);
+    }
+
+    /**
+     * @param {THREE.Box3} box Box to test for
+     */
+    inBox(box) {
+        return this.capsule.intersectsBox(box);
     }
 
     /**
